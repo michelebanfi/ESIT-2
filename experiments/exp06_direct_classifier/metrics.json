@@ -1,0 +1,15 @@
+{
+  "k_neighbours": 10,
+  "n_features": 41,
+  "rf": {
+    "cv_accuracy": 0.9576845576112841,
+    "cv_auc": 0.9909131596659078
+  },
+  "hgb": {
+    "cv_accuracy": 0.9626305184099652,
+    "cv_auc": 0.9930172259059846
+  },
+  "best_model": "hgb",
+  "test_forget_rate_at_0.5": 0.5153958944281525,
+  "test_forget_rate_at_prior": 0.375
+}

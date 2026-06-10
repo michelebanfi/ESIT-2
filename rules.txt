@@ -1,0 +1,164 @@
+Competition Rules
+ENTRY IN THIS COMPETITION CONSTITUTES YOUR ACCEPTANCE OF THESE OFFICIAL COMPETITION RULES.
+See Section 3.18 for defined terms.
+
+The Competition named below is a skills-based competition to promote and further the field of data science. You must register via the Competition Website to enter. To enter the Competition, you must agree to these Official Competition Rules, which incorporate by reference the provisions and content of the Competition Website and any Specific Competition Rules herein (collectively, the "Rules"). Please read these Rules carefully before entry to ensure you understand and agree. You further agree that Submission in the Competition constitutes agreement to these Rules. You may not submit to the Competition and are not eligible to receive the prizes associated with this Competition unless you agree to these Rules. These Rules form a binding legal agreement between you and the Competition Sponsor with respect to the Competition. Your Competition Submissions must conform to the requirements stated on the Competition Website. Your Submissions will be scored based on the evaluation metric described on the Competition Website. Subject to compliance with the Competition Rules, Prizes, if any, will be awarded to Participants with the best scores, based on the merits of the data science models submitted. See below for the complete Competition Rules.
+
+You cannot sign up to Kaggle from multiple accounts and therefore you cannot enter or submit from multiple accounts.
+
+1. COMPETITION-SPECIFIC TERMS
+1. COMPETITION TITLE
+ESIT-D2I 2026 — "Charting the Path to Bifröst" (this Kaggle competition covers Task 2 of the overall ESIT-D2I 2026 competition).
+
+2. COMPETITION SPONSOR
+ELLIS Society — Madrid Unit, in collaboration with the IEEE Information Theory Society Student and Outreach Subcommittee, under the umbrella of the Data-to-Information (D2I) initiative.
+
+3. COMPETITION WEBSITE
+Kaggle page: https://www.kaggle.com/competitions/esit-d2i-competition-2026-charting-the-path-to-bifrost-task-2
+
+Official competition website (canonical source of truth for both tasks): https://data-to-information.github.io/esit2026/
+
+4. TOTAL PRIZES AVAILABLE
+The prize pool is awarded at the level of the overall ESIT-D2I 2026 competition, which aggregates results from the Task 1 and Task 2 Kaggle competitions. Prizes are not awarded based solely on this individual Kaggle leaderboard. See Section 2.9 below ("Overall Ranking and Prize Determination") for the combined ranking procedure and obligation to present results in the final live event.
+
+The total prize pool is €1,000, tentatively allocated as:
+
+1st Prize: €500
+2nd Prize: €250
+3rd Prize: €150
+Junior Prize: €100
+Final prize amounts, currency, and the number of prizes are subject to final confirmation by the Competition Sponsor and may be adjusted depending on final sponsorship. The most up-to-date prize information is published on the Competition Website. The Competition Sponsor reserves the right to modify, reduce, split, supplement (e.g., with non-monetary prizes such as certificates, compute credits, or hardware), or — in exceptional circumstances — withhold prizes, at its sole discretion.
+
+5. WINNER LICENSE TYPE
+Non-Exclusive (see Section 2.5 below).
+
+6. DATA ACCESS AND USE
+Competition Use and Non-Commercial & Academic Research (see Section 2.4 below).
+
+2. COMPETITION-SPECIFIC RULES
+In addition to the provisions of the General Competition Rules below, you understand and agree to these Competition-Specific Rules required by the Competition Sponsor:
+
+1. TEAM LIMITS
+a. The maximum Team size is five (5).
+
+b. The recommended minimum Team size is three (3). Participants may also compete in solo mode (Team of one). Teams of two are permitted at the Competition Sponsor's discretion.
+
+c. At least one member of each Team must be a registered participant of the 2026 European School of Information Theory (ESIT 2026). Teams that do not meet this requirement may still participate but are not eligible for prizes.
+
+d. The official Team formation window closes on June 3, 2026. After this date, new Teams may still be formed provided they meet the minimum Team size, or participants may join the competition in solo mode. Team mergers after this date require approval from the Competition Sponsor.
+
+e. Team mergers are allowed and can be performed by the Team leader. In order to merge, the combined Team must have a total Submission count less than or equal to the maximum allowed as of the Team Merger Deadline. The maximum allowed is the number of Submissions per day multiplied by the number of days the competition has been running.
+
+f. A given individual may only be a member of one Team across the two Kaggle competitions that compose ESIT-D2I 2026 (Task 1 and Task 2). That is, the Team identity must be consistent across both tasks for results to count toward the overall ranking. Different Team compositions across the two tasks will disqualify the participants involved from the overall prize ranking.
+
+2. SUBMISSION LIMITS
+a. You may submit a maximum of five (5) Submissions per day.
+
+b. You may select up to two (2) Final Submissions for judging.
+
+c. Participants are reminded that Kaggle computes the public leaderboard from approximately 30% of the test set and reserves approximately 70% for the private (final) leaderboard. The private leaderboard determines the final ranking for this task. Participants are strongly advised to avoid overfitting to the public leaderboard by repeatedly tuning their models against it.
+
+3. COMPETITION TIMELINE
+a. Competition Timeline dates (including Entry Deadline, Final Submission Deadline, Start Date, and Team Merger Deadline, as applicable) are reflected on the competition's Overview > Timeline page on Kaggle and on the official Competition Website.
+
+b. The Competition Sponsor reserves the right to extend, shorten, or otherwise modify any Timeline dates at its sole discretion, with reasonable notice to participants via Kaggle and/or the official Slack workspace.
+
+4. COMPETITION DATA
+a. Data Access and Use. You may access and use the Competition Data for non-commercial purposes only, including for participating in the Competition and on Kaggle.com forums, and for academic research and education. The Competition Sponsor reserves the right to disqualify any Participant who uses the Competition Data other than as permitted by the Competition Website and these Rules.
+
+b. The Competition Data is derived from the DICHASUS dataset. Use of the Competition Data is additionally subject to the original DICHASUS dataset terms, available at: https://dichasus.inue.uni-stuttgart.de/
+
+c. Data Security. You agree to use reasonable and suitable measures to prevent persons who have not formally agreed to these Rules from gaining access to the Competition Data. You agree not to transmit, duplicate, publish, redistribute or otherwise provide or make available the Competition Data to any party not participating in the Competition. You agree to notify Kaggle immediately upon learning of any possible unauthorized transmission of or unauthorized access to the Competition Data and agree to work with Kaggle to rectify any unauthorized transmission or access.
+
+5. WINNER LICENSE
+a. Under Section 2.8 (Winners Obligations) of the General Rules below, you hereby grant and will grant the Competition Sponsor the following license with respect to your Submission if you are a Competition winner:
+
+Non-Exclusive. You hereby grant and will grant to Competition Sponsor and its designees a worldwide, non-exclusive, sub-licensable, transferable, fully paid-up, royalty-free, perpetual, irrevocable right to use, reproduce, distribute, create derivative works of, publicly perform, publicly display, digitally perform, make, have made, sell, offer for sale and import your winning Submission and the source code used to generate the Submission, in any media now known or developed in the future, for any purpose whatsoever, commercial or otherwise, without further approval by or payment to you.
+
+For generally commercially available software that you used to generate your Submission that is not owned by you, but that can be procured by the Competition Sponsor without undue expense, you do not need to grant the license in the preceding Section for that software.
+
+In the event that input data or pretrained models with an incompatible license are used to generate your winning solution, you do not need to grant a license in the preceding Section for that data and/or model(s), but you must clearly disclose their use.
+
+b. You will be required by the Competition Sponsor to provide a detailed description of how the winning Submission was generated, including a complete and reproducible code repository, methodology, preprocessing pipeline, loss function, training details, hyper-parameters, and any external data or pretrained models used. This description must be sufficient to allow the Competition Sponsor to independently reproduce the winning results. See Section 2.8 below.
+
+6. EXTERNAL DATA AND TOOLS
+a. You may use data other than the Competition Data ("External Data") to develop and test your Submissions. However, you will ensure the External Data is either publicly available and equally accessible to use by all Participants of the Competition for purposes of the Competition at no cost to the other Participants, or satisfies the Reasonableness criteria as outlined in Section 2.6.b below. The ability to use External Data under this Section does not limit your other obligations under these Competition Rules, including but not limited to Section 2.8 (Winners Obligations).
+
+b. The use of external data and models is acceptable unless specifically prohibited by the Competition Sponsor. Because of the potential costs or restrictions associated with obtaining rights to use external data or certain software, their use must be "reasonably accessible to all" and of "minimal cost". The Competition Sponsor will employ a Reasonableness Standard to assess whether the use of a particular dataset, model, or tool should be excluded.
+
+c. The following uses of External Data and external models are explicitly prohibited:
+
+Any use of the raw, uncorrupted DICHASUS measurements, ground-truth positions, or any data, label, or metadata derivative thereof that is not part of the publicly released Competition Data.
+
+Any attempt to identify or query the hidden ground-truth labels of the test set, including through reverse engineering, probing of the Kaggle leaderboard, or any other means.
+
+Any use of pretrained models that have been trained on the hidden ground-truth labels of this Competition.
+
+d. Automated Machine Learning Tools (AMLT). Individual Participants and Teams may use automated machine learning tools (e.g., Google AutoML, H2O Driverless AI, etc.) to create a Submission, provided that the Participant or Team ensures that they have an appropriate license to the AMLT such that they are able to comply with the Competition Rules.
+
+e. Use of pretrained models and public libraries. The use of generic public machine learning libraries (e.g., PyTorch, TensorFlow, JAX, scikit-learn, NumPy, SciPy) and publicly available pretrained models is permitted, subject to the restrictions in Section 2.6.c above.
+
+7. ELIGIBILITY
+a. The Competition is open to students and researchers worldwide.
+
+b. ESIT participation requirement for prizes. To be eligible for prizes, a Team must include at least one member who is a registered participant of the 2026 European School of Information Theory (ESIT 2026).
+
+c. Unless otherwise stated above or prohibited by internal policies of the Competition Entities, employees, interns, contractors, officers and directors of the Competition Entities (including the organizing committee of ESIT-D2I 2026) may enter and participate in the Competition, but are not eligible to win any Prizes. "Competition Entities" means the Competition Sponsor, Kaggle Inc., and their respective parent companies, subsidiaries and affiliates, as well as the members of the ESIT-D2I 2026 organizing committee and their immediate collaborators on the design or generation of the Competition Data.
+
+d. Eligibility to receive prizes may be further subject to external legal, financial, or regulatory constraints (e.g., export control, sanctions, tax residency). The Competition Sponsor reserves the right to withhold prizes from any winner whose receipt of the prize would violate applicable law.
+
+8. WINNER'S OBLIGATIONS
+a. As a condition to being awarded a Prize, a Prize winner must fulfill each of the following obligations:
+
+Live presentation. At least one member of the winning Team must present the winning solution at the official ESIT-D2I 2026 results announcement event (live, in person or remotely as determined by the organizers). Presentation at the live event is a mandatory condition for receiving the Prize. A Team that fails to present, without prior excused absence agreed with the Competition Sponsor, forfeits its Prize.
+
+Code and reproducibility. Deliver to the Competition Sponsor the final model's software code as used to generate the winning Submission, along with associated documentation. The delivered software code must:
+
+a. include training code, inference code, and a description of the required computational environment;
+
+b. be fully reproducible — i.e., the Competition Sponsor must be able to re-run the code and obtain results consistent with the winning Submission (up to expected stochastic variation);
+
+c. disclose all external data, pretrained models, and third-party software used.
+
+Verification. The Competition Sponsor will run the delivered code to verify reproducibility and rule compliance. If the Sponsor determines that the Rules have been broken (including but not limited to use of prohibited data, undeclared collusion between Teams, multi-account submissions, or fabrication of results), that Team will be disqualified and removed from the leaderboard. The next eligible Team in the ranking will then be promoted to that prize position and will be subject to the same verification process.
+
+License. Grant to the Competition Sponsor the license to the winning Submission stated in Section 2.5 above, and represent that you have the unrestricted right to grant that license.
+
+Documentation. Sign and return all Prize acceptance documents as may be required by the Competition Sponsor or Kaggle, including without limitation: (a) eligibility certifications; (b) licenses, releases and other agreements required under the Rules; and (c) any tax or identification forms required by applicable law for prize disbursement.
+
+b. Individual Participants and Teams who create a Submission using an AMLT may win a Prize. However, the potential winner's Submission must still meet all requirements of these Rules, including but not limited to Section 2.5 (Winner License), Section 2.8 (Winner's Obligations), and Section 3.14 (Warranty, Indemnity, and Release).
+
+9. OVERALL RANKING AND PRIZE DETERMINATION (ESIT-D2I 2026)
+a. Two-task structure. ESIT-D2I 2026 consists of two separate Kaggle competitions — one for Task 1 and one for Task 2 — each with its own evaluation metric and Kaggle leaderboard. Prizes are awarded based on combined performance across both tasks, not on the leaderboard of any single task in isolation.
+
+b. Combined ranking. For each Team that has submitted to both tasks, the Competition Sponsor will compute the final overall ranking as follows:
+
+Determine each Team's final rank on the private leaderboard of Task 1 (call it R₁) and on the private leaderboard of Task 2 (call it R₂).
+
+The Team's combined score is R₁ + R₂ (lower is better).
+
+Teams are ranked by their combined score in ascending order.
+
+c. Tie-breaking. In the event that two or more Teams have the same combined score, ties are broken using the average normalized relative difference to the best Team in each task. Specifically, for each tied Team i and each task t ∈ {1, 2}, let s_{i,t} denote the Team's private-leaderboard score on task t, and let s*_t denote the best (winning) private-leaderboard score on task t. The normalized relative difference is defined as
+
+δ_{i,t} = (s_{i,t} − s*_t) / |s*_t|
+
+(or, if s*_t = 0, δ_{i,t} = s_{i,t} − s*_t). The Team's tie-breaking statistic is the mean over the two tasks, δ_i = (δ_{i,1} + δ_{i,2}) / 2. Lower δ_i wins. If a tie persists after this procedure, the Competition Sponsor will resolve the tie at its sole discretion.
+
+d. Eligibility for the overall ranking. Only Teams that (i) submit a valid scored entry to both Task 1 and Task 2, (ii) maintain a consistent Team composition across the two tasks (Section 2.1.f), and (iii) include at least one ESIT 2026 participant (Section 2.7.b) are eligible for the overall prize ranking.
+
+e. Sponsor discretion. The Competition Sponsor reserves the right to:
+
+modify or refine the combined-ranking procedure or tie-breaking rule if, prior to the close of the Competition, an unforeseen issue makes the above procedure infeasible or manifestly unfair;
+
+disqualify any Team from the overall ranking for violation of these Rules, including but not limited to suspected collusion, prohibited use of External Data or hidden labels, multi-account submissions, or failure to meet the reproducibility requirements of Section 2.8;
+
+decline to award any or all prizes if no eligible Team meets a minimum quality threshold (e.g., no Team beats a non-trivial baseline), at the Sponsor's sole discretion.
+
+f. Final and binding. The decisions of the Competition Sponsor regarding the overall ranking, tie-breaking, eligibility, and prize awards are final and binding.
+
+10. COMMUNICATION
+a. Official announcements, clarifications, and Q&A for ESIT-D2I 2026 are coordinated through the dedicated Slack workspace linked from the official Competition Website. Participants are expected to monitor the Slack workspace for material updates. Kaggle's discussion forum will also be used for task-specific technical questions.
+
+11. GOVERNING LAW
+a. Unless otherwise required by mandatory provisions of applicable law, all claims arising out of or relating to these Rules will be governed by the laws of Spain, and will be litigated exclusively in the competent courts of Madrid, Spain. The parties consent to personal jurisdiction in those courts. If any provision of these Rules is held to be invalid or unenforceable, all remaining provisions of the Rules will remain in full force and effect.

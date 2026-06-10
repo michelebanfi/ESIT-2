@@ -1,0 +1,13 @@
+{
+  "n": 10918,
+  "forget_rate": 0.3750686938999817,
+  "base_accuracy": 0.6249313061000183,
+  "csi_summary_logreg": 0.8066502058027482,
+  "csi_summary_rf": 0.8861511026765264,
+  "csi_pca64_logreg": 0.7753244350701978,
+  "csi_pca64_rf": 0.8770833647952292,
+  "pos_rf": 0.768547710496863,
+  "pos_logreg": 0.6249312872194228,
+  "knn_consistency_auc": 0.9362856759896185,
+  "knn_consistency_acc_at_prior": 0.8670086096354643
+}

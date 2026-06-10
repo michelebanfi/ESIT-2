@@ -1,0 +1,28 @@
+{
+  "ckpt": "experiments/exp05_relabel_finetune/model_best.pth",
+  "mia_train_self_accuracy": 0.9264517310862795,
+  "retain": {
+    "mean_m": 0.1134913136968618,
+    "median_m": 0.09826198398918937,
+    "p90_m": 0.20339925723482233,
+    "n_samples": 6823
+  },
+  "forget": {
+    "mean_m": 0.8607231426865525,
+    "median_m": 0.6242874773734336,
+    "p90_m": 1.8638997462290119,
+    "n_samples": 4095
+  },
+  "test": {
+    "mean_m": 0.5605734413211513,
+    "median_m": 0.3280225218389512,
+    "p90_m": 1.3079505038209265,
+    "n_samples": 2728
+  },
+  "gmm_test_forget_rate": 0.5,
+  "gmm_component_means_m": [
+    0.15123302250252207,
+    0.6976404837033481
+  ],
+  "agreement_with_direct_classifier": 0.8541055718475073
+}
