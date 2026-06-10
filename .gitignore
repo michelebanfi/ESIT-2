@@ -4,6 +4,5 @@ data/
 __pycache__/
 *.pyc
 *.egg-info/
-experiments/*/model_*.pth
-experiments/*/model_best.pth
+**/*.pth
 .DS_Store

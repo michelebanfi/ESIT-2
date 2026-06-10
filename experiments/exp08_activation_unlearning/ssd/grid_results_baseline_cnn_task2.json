@@ -1,0 +1,127 @@
+{
+  "ckpt_in": "/Users/michelebanfi/code/ESIT-2/data/baseline_cnn_task2.pth",
+  "grid": [
+    {
+      "alpha": 1.0,
+      "lambda": 0.1,
+      "n_dampened": 3022323,
+      "self_mia": 0.6249313061000183,
+      "retain_err_m": 9.331077744066837,
+      "forget_err_m": 9.316811696072838,
+      "gmm_test_forget_rate": 0.718108504398827,
+      "pseudo_agreement": 0.5113636363636364
+    },
+    {
+      "alpha": 1.0,
+      "lambda": 0.5,
+      "n_dampened": 3022323,
+      "self_mia": 0.6249313061000183,
+      "retain_err_m": 7.434936236982317,
+      "forget_err_m": 7.466221989249628,
+      "gmm_test_forget_rate": 0.7360703812316716,
+      "pseudo_agreement": 0.5095307917888563
+    },
+    {
+      "alpha": 1.0,
+      "lambda": 1.0,
+      "n_dampened": 3022323,
+      "self_mia": 0.6249313061000183,
+      "retain_err_m": 5.203362064999431,
+      "forget_err_m": 5.225055603792666,
+      "gmm_test_forget_rate": 0.7851906158357771,
+      "pseudo_agreement": 0.4970674486803519
+    },
+    {
+      "alpha": 2.0,
+      "lambda": 0.1,
+      "n_dampened": 1751573,
+      "self_mia": 0.6249313061000183,
+      "retain_err_m": 7.1103892761025485,
+      "forget_err_m": 7.150396155004874,
+      "gmm_test_forget_rate": 0.6880498533724341,
+      "pseudo_agreement": 0.5142961876832844
+    },
+    {
+      "alpha": 2.0,
+      "lambda": 0.5,
+      "n_dampened": 1751573,
+      "self_mia": 0.6249313061000183,
+      "retain_err_m": 6.056933515282279,
+      "forget_err_m": 6.095560846372676,
+      "gmm_test_forget_rate": 0.7096774193548387,
+      "pseudo_agreement": 0.5065982404692082
+    },
+    {
+      "alpha": 2.0,
+      "lambda": 1.0,
+      "n_dampened": 1751573,
+      "self_mia": 0.6249313061000183,
+      "retain_err_m": 4.736264025941889,
+      "forget_err_m": 4.7622956440828785,
+      "gmm_test_forget_rate": 0.7521994134897361,
+      "pseudo_agreement": 0.5
+    },
+    {
+      "alpha": 5.0,
+      "lambda": 0.1,
+      "n_dampened": 677882,
+      "self_mia": 0.6419673932954754,
+      "retain_err_m": 0.6940057485260157,
+      "forget_err_m": 0.7905352140632802,
+      "gmm_test_forget_rate": 0.7840909090909091,
+      "pseudo_agreement": 0.5157624633431085
+    },
+    {
+      "alpha": 5.0,
+      "lambda": 0.5,
+      "n_dampened": 677882,
+      "self_mia": 0.6427917200952555,
+      "retain_err_m": 0.592645561524935,
+      "forget_err_m": 0.6726418459696166,
+      "gmm_test_forget_rate": 0.8090175953079178,
+      "pseudo_agreement": 0.5208944281524927
+    },
+    {
+      "alpha": 5.0,
+      "lambda": 1.0,
+      "n_dampened": 677882,
+      "self_mia": 0.642608536361971,
+      "retain_err_m": 0.5144336120137027,
+      "forget_err_m": 0.5812164384496096,
+      "gmm_test_forget_rate": 0.8057184750733137,
+      "pseudo_agreement": 0.533724340175953
+    },
+    {
+      "alpha": 10.0,
+      "lambda": 0.1,
+      "n_dampened": 313731,
+      "self_mia": 0.6571716431580875,
+      "retain_err_m": 0.2681547271416242,
+      "forget_err_m": 0.3441403290871973,
+      "gmm_test_forget_rate": 0.7617302052785924,
+      "pseudo_agreement": 0.5960410557184751
+    },
+    {
+      "alpha": 10.0,
+      "lambda": 0.5,
+      "n_dampened": 313731,
+      "self_mia": 0.6570800512914453,
+      "retain_err_m": 0.26146003102320503,
+      "forget_err_m": 0.3344434931268723,
+      "gmm_test_forget_rate": 0.7624633431085044,
+      "pseudo_agreement": 0.5960410557184751
+    },
+    {
+      "alpha": 10.0,
+      "lambda": 1.0,
+      "n_dampened": 313731,
+      "self_mia": 0.6560725407583806,
+      "retain_err_m": 0.25364125013561173,
+      "forget_err_m": 0.3228968127585678,
+      "gmm_test_forget_rate": 0.75,
+      "pseudo_agreement": 0.6019061583577713
+    }
+  ],
+  "selection_key": "self_mia",
+  "best": null
+}

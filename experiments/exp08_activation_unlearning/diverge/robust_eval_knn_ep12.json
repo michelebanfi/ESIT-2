@@ -1,0 +1,28 @@
+{
+  "ckpt": "experiments/exp08_activation_unlearning/diverge/model_best_knn.pth",
+  "mia_train_self_accuracy": 0.8636197105697014,
+  "retain": {
+    "mean_m": 0.16410887848930789,
+    "median_m": 0.13925397325126088,
+    "p90_m": 0.29376805585022636,
+    "n_samples": 6823
+  },
+  "forget": {
+    "mean_m": 0.7488463386075883,
+    "median_m": 0.5633935128642608,
+    "p90_m": 1.547297843229951,
+    "n_samples": 4095
+  },
+  "test": {
+    "mean_m": 0.5488512458391852,
+    "median_m": 0.346040331538414,
+    "p90_m": 1.2262640455629343,
+    "n_samples": 2728
+  },
+  "gmm_test_forget_rate": 0.5054985337243402,
+  "gmm_component_means_m": [
+    0.1745872405141415,
+    0.6769864723274475
+  ],
+  "agreement_with_direct_classifier": 0.8346774193548387
+}

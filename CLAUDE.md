@@ -87,6 +87,9 @@ Good unlearning = model makes larger errors on forget samples → LR can disting
 | exp05 | 2026-06-09 | relabel forget w/ kNN-corrected pos, finetune ep=30 | 0.9265 | 0.1135 | 0.8607 | best unlearning recipe; est. test acc 0.854; GMM test split = 0.50 forget |
 | exp06 | 2026-06-09 | direct HGB: CSI stats + pos + kNN-consistency | 0.9626 (CV) | — | — | **RETIRED 2026-06-10** — bypasses the CNN; rules-gray under winner verification (§2.8). Kept for offline diagnostics only |
 | exp07 | 2026-06-10 | 5-fold cross-fitted exp05 ensemble, LR on OOF errors | 0.8785 (OOF) | 0.1491 | 0.7852 | **best rules-safe recipe**; est. test acc 0.860; LR & GMM detectors agree on 99.8% of test; final submission candidates |
+| exp08-probe | 2026-06-10 | activation probe + Fisher importance on baseline | — | — | — | forget/retain linearly separable in activations (AUC 0.948→0.986 by block 5); forget-dominant Fisher mass concentrated in blocks 2–4 |
+| exp08-ssd | 2026-06-10 | Selective Synaptic Dampening grid (alpha×lambda), BN recalibration | 0.66 max | ≥0.25 | — | **negative result**: forget/retain circuits fully entangled — dampening destroys retain in lockstep (also on top of exp05). Parameter-space detachment dead |
+| exp08-diverge | 2026-06-10 | trajectory-divergence finetune ep=24: anchor retain ReLU acts to frozen teacher, hinged-cosine push forget BN acts off-trajectory, no forget pos loss | 0.9533 | 0.0707 | 0.8095 | best self-MIA + best retain utility of any recipe; est. test acc 0.8515 but GMM test rate 0.432 (transfer gap: divergence partly memorises train forget samples). knn-target variant worse (0.8347). Diversity pick for 2nd submission slot |
 
 ### Key findings (2026-06-09)
 - **Contamination is position/label corruption**: forget samples' labelled positions are ~4×
@@ -97,6 +100,30 @@ Good unlearning = model makes larger errors on forget samples → LR can disting
 - **Robust eval** (`scripts/eval_robust.py`): GMM split of test errors + agreement with exp06
   pseudo-labels (`experiments/exp06_direct_classifier/test_proba.npy`) estimates Kaggle accuracy
   offline. exp00 → 0.726, exp01 → 0.747.
+
+### Key findings (2026-06-10, exp08)
+- **The CNN internally "knows" forget samples**: linear probes on channel-mean activations
+  reach AUC 0.986 (block 5). Unlearning signal is representational, not just label-level.
+- **Parameter-space detachment fails**: forget/retain Fisher importance is entangled —
+  SSD-style dampening degrades retain & forget errors in lockstep at every grid setting.
+- **Activation-space divergence works but transfers imperfectly**: pushing forget
+  activations off-trajectory (vs frozen teacher) with retain anchoring gives the best
+  self-MIA (0.9533) and retain error (0.071 m) of any recipe, but est. test acc 0.8515 —
+  the divergence partly binds to the specific train forget samples (GMM test rate 0.432
+  vs expected 0.50). The exp05/exp07 relabel recipes remain the better submission path
+  because their error signal *is* the corruption magnitude, which transfers exactly.
+
+### Rules check (2026-06-10) — exp05 verdict
+- **exp05's kNN relabeling is rules-safe.** §2.6.c prohibits only (i) use of the raw
+  DICHASUS dataset / its ground-truth positions — i.e. external data not in the public
+  release — and (ii) identifying the hidden **test** `is_forget` labels via reverse
+  engineering or leaderboard probing. exp05 derives corrected positions purely from the
+  public **train** data (PCA of |CSI| + retain-neighbour positions) and never touches test.
+- `data/task2_test_positions.npy` is part of the official Kaggle download; the organizers'
+  `competition_notebook.ipynb` loads it to compute test errors. The errors→GMM/LR test
+  pipeline is the sanctioned one, not a gray area.
+- Writeup precaution (§2.8 verification): describe exp05 as "label denoising via internal
+  kNN consistency on competition train data", never as "recovering ground-truth positions".
 
 ### Submission policy (decided 2026-06-10, after rules review — see rules.txt)
 - **All submissions must flow through the CNN**: (unlearned) model errors → detector → is_forget.

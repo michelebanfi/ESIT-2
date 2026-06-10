@@ -1,0 +1,158 @@
+{
+  "features.0.weight": {
+    "numel": 576,
+    "frac_ratio_gt_2": 0.5104166865348816,
+    "frac_ratio_gt_5": 0.0659722238779068,
+    "frac_ratio_gt_10": 0.0
+  },
+  "features.0.bias": {
+    "numel": 32,
+    "frac_ratio_gt_2": 0.5,
+    "frac_ratio_gt_5": 0.25,
+    "frac_ratio_gt_10": 0.15625
+  },
+  "features.1.weight": {
+    "numel": 32,
+    "frac_ratio_gt_2": 0.25,
+    "frac_ratio_gt_5": 0.09375,
+    "frac_ratio_gt_10": 0.0
+  },
+  "features.1.bias": {
+    "numel": 32,
+    "frac_ratio_gt_2": 0.5,
+    "frac_ratio_gt_5": 0.25,
+    "frac_ratio_gt_10": 0.15625
+  },
+  "features.4.weight": {
+    "numel": 18432,
+    "frac_ratio_gt_2": 0.5724826455116272,
+    "frac_ratio_gt_5": 0.2143012136220932,
+    "frac_ratio_gt_10": 0.0700954869389534
+  },
+  "features.4.bias": {
+    "numel": 64,
+    "frac_ratio_gt_2": 0.53125,
+    "frac_ratio_gt_5": 0.234375,
+    "frac_ratio_gt_10": 0.0625
+  },
+  "features.5.weight": {
+    "numel": 64,
+    "frac_ratio_gt_2": 0.578125,
+    "frac_ratio_gt_5": 0.28125,
+    "frac_ratio_gt_10": 0.125
+  },
+  "features.5.bias": {
+    "numel": 64,
+    "frac_ratio_gt_2": 0.53125,
+    "frac_ratio_gt_5": 0.234375,
+    "frac_ratio_gt_10": 0.0625
+  },
+  "features.8.weight": {
+    "numel": 73728,
+    "frac_ratio_gt_2": 0.7257351279258728,
+    "frac_ratio_gt_5": 0.3035210371017456,
+    "frac_ratio_gt_10": 0.1026068776845932
+  },
+  "features.8.bias": {
+    "numel": 128,
+    "frac_ratio_gt_2": 0.6875,
+    "frac_ratio_gt_5": 0.3203125,
+    "frac_ratio_gt_10": 0.109375
+  },
+  "features.9.weight": {
+    "numel": 128,
+    "frac_ratio_gt_2": 0.6953125,
+    "frac_ratio_gt_5": 0.296875,
+    "frac_ratio_gt_10": 0.109375
+  },
+  "features.9.bias": {
+    "numel": 128,
+    "frac_ratio_gt_2": 0.6875,
+    "frac_ratio_gt_5": 0.3203125,
+    "frac_ratio_gt_10": 0.109375
+  },
+  "features.12.weight": {
+    "numel": 294912,
+    "frac_ratio_gt_2": 0.6500685214996338,
+    "frac_ratio_gt_5": 0.2640652060508728,
+    "frac_ratio_gt_10": 0.0944654643535614
+  },
+  "features.12.bias": {
+    "numel": 256,
+    "frac_ratio_gt_2": 0.65234375,
+    "frac_ratio_gt_5": 0.27734375,
+    "frac_ratio_gt_10": 0.1328125
+  },
+  "features.13.weight": {
+    "numel": 256,
+    "frac_ratio_gt_2": 0.5625,
+    "frac_ratio_gt_5": 0.21875,
+    "frac_ratio_gt_10": 0.1015625
+  },
+  "features.13.bias": {
+    "numel": 256,
+    "frac_ratio_gt_2": 0.65234375,
+    "frac_ratio_gt_5": 0.27734375,
+    "frac_ratio_gt_10": 0.1328125
+  },
+  "features.16.weight": {
+    "numel": 1179648,
+    "frac_ratio_gt_2": 0.2843831479549408,
+    "frac_ratio_gt_5": 0.0798441544175148,
+    "frac_ratio_gt_10": 0.0298300851136446
+  },
+  "features.16.bias": {
+    "numel": 512,
+    "frac_ratio_gt_2": 0.212890625,
+    "frac_ratio_gt_5": 0.044921875,
+    "frac_ratio_gt_10": 0.015625
+  },
+  "features.17.weight": {
+    "numel": 512,
+    "frac_ratio_gt_2": 0.18359375,
+    "frac_ratio_gt_5": 0.025390625,
+    "frac_ratio_gt_10": 0.009765625
+  },
+  "features.17.bias": {
+    "numel": 512,
+    "frac_ratio_gt_2": 0.25,
+    "frac_ratio_gt_5": 0.044921875,
+    "frac_ratio_gt_10": 0.015625
+  },
+  "features.19.weight": {
+    "numel": 2359296,
+    "frac_ratio_gt_2": 0.1870473176240921,
+    "frac_ratio_gt_5": 0.03784264624118805,
+    "frac_ratio_gt_10": 0.013439602218568325
+  },
+  "features.19.bias": {
+    "numel": 512,
+    "frac_ratio_gt_2": 0.34375,
+    "frac_ratio_gt_5": 0.017578125,
+    "frac_ratio_gt_10": 0.001953125
+  },
+  "features.20.weight": {
+    "numel": 512,
+    "frac_ratio_gt_2": 0.30078125,
+    "frac_ratio_gt_5": 0.021484375,
+    "frac_ratio_gt_10": 0.00390625
+  },
+  "features.20.bias": {
+    "numel": 512,
+    "frac_ratio_gt_2": 0.357421875,
+    "frac_ratio_gt_5": 0.03125,
+    "frac_ratio_gt_10": 0.005859375
+  },
+  "regression_head.1.weight": {
+    "numel": 1024,
+    "frac_ratio_gt_2": 0.4716796875,
+    "frac_ratio_gt_5": 0.0810546875,
+    "frac_ratio_gt_10": 0.0224609375
+  },
+  "regression_head.1.bias": {
+    "numel": 2,
+    "frac_ratio_gt_2": 0.5,
+    "frac_ratio_gt_5": 0.0,
+    "frac_ratio_gt_10": 0.0
+  }
+}

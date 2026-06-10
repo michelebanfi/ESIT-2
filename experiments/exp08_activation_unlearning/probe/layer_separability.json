@@ -1,0 +1,44 @@
+{
+  "2": {
+    "n_channels": 32,
+    "probe_auc_cv": 0.9477402807782106,
+    "mean_abs_d": 0.15629188349539366,
+    "max_abs_d": 0.4211920149277633,
+    "n_channels_absd_gt_0.5": 0
+  },
+  "6": {
+    "n_channels": 64,
+    "probe_auc_cv": 0.9673887136666293,
+    "mean_abs_d": 0.3989934046925655,
+    "max_abs_d": 1.2004943522861375,
+    "n_channels_absd_gt_0.5": 24
+  },
+  "10": {
+    "n_channels": 128,
+    "probe_auc_cv": 0.9686482618173506,
+    "mean_abs_d": 0.35729882644348687,
+    "max_abs_d": 1.1849313874488212,
+    "n_channels_absd_gt_0.5": 38
+  },
+  "14": {
+    "n_channels": 256,
+    "probe_auc_cv": 0.9805704516445388,
+    "mean_abs_d": 0.3349378068981336,
+    "max_abs_d": 1.5946510076497002,
+    "n_channels_absd_gt_0.5": 61
+  },
+  "18": {
+    "n_channels": 512,
+    "probe_auc_cv": 0.9862789685795711,
+    "mean_abs_d": 0.25135641730780234,
+    "max_abs_d": 1.5435249499357042,
+    "n_channels_absd_gt_0.5": 45
+  },
+  "21": {
+    "n_channels": 512,
+    "probe_auc_cv": 0.9814332220748385,
+    "mean_abs_d": 0.13218667979644616,
+    "max_abs_d": 0.8434183103841063,
+    "n_channels_absd_gt_0.5": 14
+  }
+}
