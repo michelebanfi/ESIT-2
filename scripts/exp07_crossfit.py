@@ -165,7 +165,8 @@ if PSEUDO_PATH.exists():
           f"GMM={results['diag_gmm_pseudo_agreement']:.4f}")
 
 for tag, preds in [("lr", lr_preds_test), ("gmm", gmm_preds_test)]:
-    sub = pd.DataFrame({"sample_index": meta_test["sample_index"], "is_forget": preds})
+    # Kaggle scorer expects "id", not "sample_index" as in the cached sample submission
+    sub = pd.DataFrame({"id": meta_test["sample_index"], "is_forget": preds})
     path = OUT_DIR / f"submission_{tag}.csv"
     sub.to_csv(path, index=False)
     print(f"wrote {path}")

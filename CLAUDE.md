@@ -86,6 +86,7 @@ Good unlearning = model makes larger errors on forget samples → LR can disting
 | exp02 | 2026-06-09 | NegGrad+ alpha=0.5 clamp=0.25 ep=15 | 0.8672 | 0.1301 | 0.5553 | est. test acc 0.828 (pseudo-label agreement) |
 | exp05 | 2026-06-09 | relabel forget w/ kNN-corrected pos, finetune ep=30 | 0.9265 | 0.1135 | 0.8607 | best unlearning recipe; est. test acc 0.854; GMM test split = 0.50 forget |
 | exp06 | 2026-06-09 | direct HGB: CSI stats + pos + kNN-consistency | 0.9626 (CV) | — | — | **RETIRED 2026-06-10** — bypasses the CNN; rules-gray under winner verification (§2.8). Kept for offline diagnostics only |
+| exp07 | 2026-06-10 | 5-fold cross-fitted exp05 ensemble, LR on OOF errors | 0.8785 (OOF) | 0.1491 | 0.7852 | **best rules-safe recipe**; est. test acc 0.860; LR & GMM detectors agree on 99.8% of test; final submission candidates |
 
 ### Key findings (2026-06-09)
 - **Contamination is position/label corruption**: forget samples' labelled positions are ~4×

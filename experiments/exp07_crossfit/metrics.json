@@ -1,0 +1,28 @@
+{
+  "config": {
+    "lr": 0.0001,
+    "epochs": 30,
+    "batch_size": 64,
+    "n_folds": 5,
+    "seed": 42,
+    "k_neighbours": 10
+  },
+  "oof_retain": {
+    "mean_m": 0.14908392939806484,
+    "median_m": 0.12661325684385313,
+    "p90_m": 0.26799663985688216,
+    "n_samples": 6823
+  },
+  "oof_forget": {
+    "mean_m": 0.7851591451972182,
+    "median_m": 0.5737107481059227,
+    "p90_m": 1.6790113968398352,
+    "n_samples": 4095
+  },
+  "oof_lr_train_accuracy": 0.8785491848323869,
+  "lr_test_forget_rate": 0.4871700879765396,
+  "gmm_test_forget_rate": 0.48533724340175954,
+  "lr_gmm_agreement": 0.9981671554252199,
+  "diag_lr_pseudo_agreement": 0.8603372434017595,
+  "diag_gmm_pseudo_agreement": 0.8614369501466276
+}

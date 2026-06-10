@@ -88,7 +88,8 @@ if PSEUDO_PATH.exists():
           f"(estimates Kaggle accuracy of this submission)")
 
 if args.out:
-    sub = pd.DataFrame({"sample_index": meta_te["sample_index"], "is_forget": preds_te})
+    # Kaggle scorer expects "id", not "sample_index" as in the cached sample submission
+    sub = pd.DataFrame({"id": meta_te["sample_index"], "is_forget": preds_te})
     sub.to_csv(args.out, index=False)
     print(f"  wrote {args.out}")
 
