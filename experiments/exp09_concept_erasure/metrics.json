@@ -1,0 +1,84 @@
+{
+  "none": {
+    "ckpt_in": "/Users/michelebanfi/code/ESIT-2/data/baseline_cnn_task2.pth",
+    "variant": "none",
+    "config": {
+      "seed": 42,
+      "batch_size": 64,
+      "lr": 5e-05,
+      "epochs": 20,
+      "erase_idx": [
+        14,
+        18,
+        21
+      ],
+      "anchor_idx": [
+        14,
+        18,
+        21
+      ],
+      "beta_anchor": 1.0,
+      "lambda_erase": 1.0,
+      "erase_warmup_epochs": 2,
+      "delta_forget_pos": 1.0,
+      "k_neighbours": 10,
+      "retain_err_guard_m": 0.25,
+      "eval_every": 2,
+      "probe_cv_folds": 3
+    },
+    "baseline_probe_auc": {
+      "14": 0.9794840462130322,
+      "18": 0.9848964606140518,
+      "21": 0.9806156506543297
+    },
+    "best": {
+      "self_mia": 0.7770653965927825,
+      "retain_err_m": 0.12431509172168333,
+      "forget_err_m": 0.26081757556429025,
+      "gmm_test_forget_rate": 0.5777126099706745,
+      "pseudo_agreement": 0.7778592375366569,
+      "epoch": 4
+    }
+  },
+  "knn": {
+    "ckpt_in": "/Users/michelebanfi/code/ESIT-2/data/baseline_cnn_task2.pth",
+    "variant": "knn",
+    "config": {
+      "seed": 42,
+      "batch_size": 64,
+      "lr": 5e-05,
+      "epochs": 20,
+      "erase_idx": [
+        14,
+        18,
+        21
+      ],
+      "anchor_idx": [
+        14,
+        18,
+        21
+      ],
+      "beta_anchor": 1.0,
+      "lambda_erase": 1.0,
+      "erase_warmup_epochs": 2,
+      "delta_forget_pos": 1.0,
+      "k_neighbours": 10,
+      "retain_err_guard_m": 0.25,
+      "eval_every": 2,
+      "probe_cv_folds": 3
+    },
+    "baseline_probe_auc": {
+      "14": 0.9794840462130322,
+      "18": 0.9848964606140518,
+      "21": 0.9806156506543297
+    },
+    "best": {
+      "self_mia": 0.7690969041949075,
+      "retain_err_m": 0.2430348059491218,
+      "forget_err_m": 0.5779099699987705,
+      "gmm_test_forget_rate": 0.6411290322580645,
+      "pseudo_agreement": 0.7071114369501467,
+      "epoch": 4
+    }
+  }
+}
