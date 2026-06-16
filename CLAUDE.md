@@ -90,6 +90,8 @@ Good unlearning = model makes larger errors on forget samples → LR can disting
 | exp08-probe | 2026-06-10 | activation probe + Fisher importance on baseline | — | — | — | forget/retain linearly separable in activations (AUC 0.948→0.986 by block 5); forget-dominant Fisher mass concentrated in blocks 2–4 |
 | exp08-ssd | 2026-06-10 | Selective Synaptic Dampening grid (alpha×lambda), BN recalibration | 0.66 max | ≥0.25 | — | **negative result**: forget/retain circuits fully entangled — dampening destroys retain in lockstep (also on top of exp05). Parameter-space detachment dead |
 | exp08-diverge | 2026-06-10 | trajectory-divergence finetune ep=24: anchor retain ReLU acts to frozen teacher, hinged-cosine push forget BN acts off-trajectory, no forget pos loss | 0.9533 | 0.0707 | 0.8095 | best self-MIA + best retain utility of any recipe; est. test acc 0.8515 but GMM test rate 0.432 (transfer gap: divergence partly memorises train forget samples). knn-target variant worse (0.8347). Diversity pick for 2nd submission slot |
+| exp10 | 2026-06-10 | 2-way ensemble exp07+exp08-diverge (70/30), LR detector | 0.9310 (approx) | — | — | est. test acc 0.897; **public LB 0.91564** — first submission |
+| exp11 | 2026-06-16 | SCRUB cross-fitted (5-fold): alternating gradient ascent on forget (lr=2e-5) + descent on retain (lr=5e-5), 15 cycles, starting from exp07 fold ckpts | 0.8788 (OOF) | 0.0897 | 0.4636 | OOF LR≈exp07; value is ensemble diversity. 3-way ensemble exp07 30%+exp11 30%+exp08-div 40%, top-50% threshold: offline 0.900; **public LB 0.92787** — final submission |
 
 ### Key findings (2026-06-09)
 - **Contamination is position/label corruption**: forget samples' labelled positions are ~4×
