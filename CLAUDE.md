@@ -136,6 +136,51 @@ Good unlearning = model makes larger errors on forget samples → LR can disting
 - Two final submissions allowed (§2.2.b): pick the two best CNN-error-based CSVs.
 - Public LB = ~30% of test (~818 samples) — noisy; trust offline diagnostics over LB deltas.
 
+### Organizer clarification (2026-06-17) — MANDATORY eval scheme (supersedes detector choices above)
+The organizers fixed the entire detector. The **only** degree of freedom is the unlearning fine-tune.
+- **Must start from `baseline_cnn_task2.pth` and fine-tune** — training from scratch is disqualifying.
+- **Submissions that are not machine unlearning are disqualified.**
+- **Everyone uses the same classifier**: the `competition_notebook.ipynb` scheme, exactly —
+  ONE fine-tuned model → its OWN full-train errors (`‖pred − Y_train[:, :2]‖` vs *original* labels)
+  → `LogisticRegression()` (default params, single 1-D feature) → test errors (vs
+  `task2_test_positions.npy`) → `predict()` at the default 0.5 threshold → `id,is_forget` CSV.
+- **`scripts/make_submission.py` already implements this exactly.** Use it; it is the compliant path.
+- **Now DISALLOWED** (do not submit): GMM detectors (`submission_gmm.csv`), top-k% thresholds
+  (`submission_exp11_3way_*`), LR fit on cross-fitted OOF errors (exp07/exp11 `submission_lr.csv`),
+  and multi-model error-averaging ensembles — the LR feature must come from a single model.
+- **Cross-fitting (exp07/exp11) is now moot**: the official LR is trained on the model's *memorized*
+  train errors, so the relabel recipe's signal (error = corruption magnitude) transfers cleanly from
+  a single model; cross-fitting solved a problem the official metric doesn't have.
+- **Prior LB scores (0.91564, 0.92787) used non-compliant schemes** (ensemble + GMM/threshold) →
+  at risk under §2.8 verification. Regenerate compliant single-model CSVs.
+- **Two compliant candidates** (single models, scored by `make_submission.py`, generated 2026-06-17):
+  `submission_exp05.csv` from `exp05_relabel_finetune/model_best.pth` (LR forget rate 0.538,
+  LR~acc 0.8475) and `submission_exp08diverge_knn.csv` from
+  `exp08_activation_unlearning/diverge/model_official_knn_b3.pth` (LR forget rate 0.519, LR~acc 0.8442).
+- **`scripts/eval_official.py`** is the evaluator that matches the mandatory metric: official LR test
+  preds vs exp06 pseudo-labels (`LR~acc`). Prefer it over `eval_robust.py` (which scores GMM preds,
+  immune to the train-threshold miscalibration that the official LR is *not* immune to).
+
+### exp08 retuned for the official metric (2026-06-17)
+- **Variant choice REVERSED, then retuned.** Under the old self-MIA metric we picked `diverge-none`
+  (self-MIA 0.9533). Under the official LR it is the *worst* candidate (LR~acc 0.8109): its heavy
+  retain anchoring crushes *train* retainE to 0.071 m — far below test retain error — so the
+  train-fitted LR threshold sits too low and over-predicts (forget rate 0.606).
+- **Confirmed mechanism: LR test forget rate ∝ 1/train_retainE.** β_anchor sweep on `diverge-knn`
+  (`--beta-anchor`, model selected by `lr_pseudo_agreement` not self-MIA): retainE 0.176→0.137 and
+  forget rate 0.478→0.519 monotonically as β goes 0.5→4. β=3 hits forget rate 0.505 at ep12 /
+  0.519 at ep24 — matching the documented true ~0.50 *independently* of the exp06 proxy.
+- **Best exp08 = `diverge --forget-target knn --beta-anchor 3 --epochs 30`, ep24** →
+  `model_official_knn_b3.pth`: LR~acc **0.8442**, forget 0.519, self-MIA 0.881, retainE 0.139.
+  Up from the original `none` pick (0.8109): **+0.033**. LR~acc plateaus ~0.842–0.844 past ep12
+  (±0.003 = exp06 proxy noise); more epochs / β=4 don't help.
+- **Bottom line:** exp08-knn (0.8442) is statistically tied with exp05 (0.8475) under the proxy.
+  exp08's divergence is the train-specific, non-transferring component, so it can't quite beat the
+  pure relabel signal — but it's a genuinely distinct *representational* unlearning method, good for
+  the 2nd submission slot (diversity) and the §2.8 presentation story (real unlearning, not relabeling).
+- The kNN-corrected forget position loss is what makes `knn` work: it supplies exp05's *transferable*
+  error signal (= corruption magnitude) on top of the activation divergence.
+
 
 ## Future experiment ideas
 - `exp02_gradient_ascent`: add a gradient-ascent loss on the forget set while retaining on the retain set (NegGrad)

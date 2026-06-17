@@ -84,9 +84,14 @@ parser.add_argument("--diverge", action="store_true")
 parser.add_argument("--ckpt-in", default=str(ROOT / "data" / "baseline_cnn_task2.pth"))
 parser.add_argument("--forget-target", choices=["none", "knn"], default="none")
 parser.add_argument("--epochs", type=int, default=None, help="override CFG['epochs']")
+parser.add_argument("--beta-anchor", type=float, default=None,
+                    help="override CFG['beta_anchor'] — retain-anchor strength. Higher = "
+                         "tighter retain trajectory = smaller train retainE = LR over-predicts.")
 args = parser.parse_args()
 if args.epochs:
     CFG["epochs"] = args.epochs
+if args.beta_anchor is not None:
+    CFG["beta_anchor"] = args.beta_anchor
 if not (args.probe or args.ssd or args.diverge):
     parser.error("pick at least one of --probe / --ssd / --diverge")
 
@@ -161,19 +166,29 @@ def get_pos_corrected():
 
 
 def quick_eval(model, with_test=True):
-    """Self-MIA + retain/forget errors on train; optional GMM/pseudo on test."""
+    """Self-MIA + retain/forget errors on train; on test the OFFICIAL-LR proxy.
+
+    Mandatory metric (2026-06-17): fit LogisticRegression on this model's own train
+    errors, predict the test errors, score against exp06 pseudo-labels. GMM is kept
+    for reference only — it finds its own per-set threshold and is therefore immune to
+    the train-threshold miscalibration the official LR actually suffers.
+    """
     err_tr = prediction_errors(get_predictions(model, X_full, device=DEVICE), pos_train)
+    mia = mia_accuracy(err_tr, y, err_tr, y)  # also gives the fitted LR for the proxy
     row = {
-        "self_mia": mia_accuracy(err_tr, y, err_tr, y)["mia_accuracy"],
+        "self_mia": mia["mia_accuracy"],
         "retain_err_m": float(err_tr[retain_mask].mean()),
         "forget_err_m": float(err_tr[forget_mask].mean()),
     }
     if with_test:
         err_te = prediction_errors(get_predictions(model, X_test, device=DEVICE), pos_test)
+        lr_te = mia["lr_model"].predict(err_te.reshape(-1, 1)).astype(int)
+        row["lr_test_forget_rate"] = float(lr_te.mean())
         gmm = gmm_threshold_predictions(err_te)
         row["gmm_test_forget_rate"] = gmm["forget_rate"]
         if PSEUDO is not None:
-            row["pseudo_agreement"] = float((gmm["predictions"] == PSEUDO).mean())
+            row["lr_pseudo_agreement"] = float((lr_te == PSEUDO).mean())
+            row["gmm_pseudo_agreement"] = float((gmm["predictions"] == PSEUDO).mean())
     return row
 
 
@@ -413,8 +428,13 @@ def run_diverge():
                         generator=torch.Generator().manual_seed(CFG["seed"]))
 
     opt = torch.optim.Adam(student.parameters(), lr=CFG["lr"])
-    best = {"self_mia": -1.0}
-    best_path = OUT_DIR / "diverge" / f"model_best_{variant}.pth"
+    # Select on the OFFICIAL-LR proxy (lr_pseudo_agreement) when pseudo-labels exist,
+    # else fall back to self-MIA. Distinct filename so we never clobber the legacy
+    # self-MIA-selected model_best_{variant}.pth.
+    sel_key = "lr_pseudo_agreement" if PSEUDO is not None else "self_mia"
+    best = {sel_key: -1.0}
+    run_tag = f"{variant}_b{CFG['beta_anchor']:g}"
+    best_path = OUT_DIR / "diverge" / f"model_official_{run_tag}.pth"
     log = []
 
     try:
@@ -485,30 +505,34 @@ def run_diverge():
 
             if epoch % CFG["eval_every"] == 0 or epoch == CFG["epochs"]:
                 student.eval()
-                ev = quick_eval(student, with_test=False)
+                ev = quick_eval(student, with_test=True)
                 entry.update(ev)
                 print(f"      selfMIA={ev['self_mia']:.4f}  retain={ev['retain_err_m']:.4f}m  "
-                      f"forget={ev['forget_err_m']:.4f}m")
+                      f"forget={ev['forget_err_m']:.4f}m  "
+                      f"LRfgt={ev.get('lr_test_forget_rate', float('nan')):.3f}  "
+                      f"LR~acc={ev.get('lr_pseudo_agreement', float('nan')):.4f}")
                 if (ev["retain_err_m"] <= CFG["retain_err_guard_m"]
-                        and ev["self_mia"] > best["self_mia"]):
+                        and ev[sel_key] > best[sel_key]):
                     best = {**ev, "epoch": epoch}
                     torch.save(student.state_dict(), best_path)
-                    print(f"      saved -> {best_path}")
+                    print(f"      saved -> {best_path}  ({sel_key}={ev[sel_key]:.4f})")
             log.append(entry)
     finally:
         tap_s.remove()
         tap_t.remove()
 
-    out = {"ckpt_in": args.ckpt_in, "variant": variant, "config": CFG,
-           "best": best, "log": log}
-    (OUT_DIR / "diverge" / f"train_log_{variant}.json").write_text(json.dumps(out, indent=2))
-    if best["self_mia"] < 0:
+    out = {"ckpt_in": args.ckpt_in, "variant": variant, "run_tag": run_tag,
+           "select_on": sel_key, "config": CFG, "best": best, "log": log}
+    (OUT_DIR / "diverge" / f"train_log_{run_tag}.json").write_text(json.dumps(out, indent=2))
+    if best[sel_key] < 0:
         print("  !! no epoch passed the retain-error guard — nothing saved")
     else:
-        print(f"  best epoch {best['epoch']}: selfMIA={best['self_mia']:.4f}  "
-              f"retain={best['retain_err_m']:.4f}m  forget={best['forget_err_m']:.4f}m")
-        print(f"  Run: python scripts/eval_robust.py --ckpt {best_path}")
-    update_metrics(f"diverge_{variant}", {k: v for k, v in out.items() if k != "log"})
+        print(f"  best epoch {best['epoch']} (by {sel_key}): selfMIA={best['self_mia']:.4f}  "
+              f"retain={best['retain_err_m']:.4f}m  forget={best['forget_err_m']:.4f}m  "
+              f"LRfgt={best.get('lr_test_forget_rate', float('nan')):.3f}  "
+              f"LR~acc={best.get('lr_pseudo_agreement', float('nan')):.4f}")
+        print(f"  Run: python scripts/eval_official.py --ckpt {best_path}")
+    update_metrics(f"diverge_{run_tag}", {k: v for k, v in out.items() if k != "log"})
 
 
 if __name__ == "__main__":

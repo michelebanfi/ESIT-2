@@ -421,5 +421,407 @@
       "forget_err_m": 0.7488463386075883,
       "epoch": 12
     }
+  },
+  "diverge_knn_b1": {
+    "ckpt_in": "/Users/michelebanfi/code/ESIT-2/data/baseline_cnn_task2.pth",
+    "variant": "knn",
+    "run_tag": "knn_b1",
+    "select_on": "lr_pseudo_agreement",
+    "config": {
+      "seed": 42,
+      "batch_size": 64,
+      "probe_relu_idx": [
+        2,
+        6,
+        10,
+        14,
+        18,
+        21
+      ],
+      "fisher_batch_size": 64,
+      "ssd_alphas": [
+        1.0,
+        2.0,
+        5.0,
+        10.0
+      ],
+      "ssd_lambdas": [
+        0.1,
+        0.5,
+        1.0
+      ],
+      "ssd_exclude_bn": true,
+      "ssd_exclude_head": false,
+      "retain_err_guard_m": 0.25,
+      "gmm_rate_range": [
+        0.4,
+        0.6
+      ],
+      "div_bn_idx": [
+        13,
+        17,
+        20
+      ],
+      "anchor_relu_idx": [
+        14,
+        18,
+        21
+      ],
+      "lr": 5e-05,
+      "epochs": 12,
+      "beta_anchor": 1.0,
+      "gamma_diverge": 0.5,
+      "gamma_warmup_epochs": 2,
+      "cos_margin": 0.0,
+      "norm_keep_weight": 0.1,
+      "delta_forget_pos": 1.0,
+      "k_neighbours": 10,
+      "eval_every": 3
+    },
+    "best": {
+      "self_mia": 0.8636197105697014,
+      "retain_err_m": 0.16410887848930789,
+      "forget_err_m": 0.7488463386075883,
+      "lr_test_forget_rate": 0.4871700879765396,
+      "gmm_test_forget_rate": 0.5054985337243402,
+      "lr_pseudo_agreement": 0.8332111436950147,
+      "gmm_pseudo_agreement": 0.8346774193548387,
+      "epoch": 12
+    }
+  },
+  "diverge_knn_b0.5": {
+    "ckpt_in": "/Users/michelebanfi/code/ESIT-2/data/baseline_cnn_task2.pth",
+    "variant": "knn",
+    "run_tag": "knn_b0.5",
+    "select_on": "lr_pseudo_agreement",
+    "config": {
+      "seed": 42,
+      "batch_size": 64,
+      "probe_relu_idx": [
+        2,
+        6,
+        10,
+        14,
+        18,
+        21
+      ],
+      "fisher_batch_size": 64,
+      "ssd_alphas": [
+        1.0,
+        2.0,
+        5.0,
+        10.0
+      ],
+      "ssd_lambdas": [
+        0.1,
+        0.5,
+        1.0
+      ],
+      "ssd_exclude_bn": true,
+      "ssd_exclude_head": false,
+      "retain_err_guard_m": 0.25,
+      "gmm_rate_range": [
+        0.4,
+        0.6
+      ],
+      "div_bn_idx": [
+        13,
+        17,
+        20
+      ],
+      "anchor_relu_idx": [
+        14,
+        18,
+        21
+      ],
+      "lr": 5e-05,
+      "epochs": 12,
+      "beta_anchor": 0.5,
+      "gamma_diverge": 0.5,
+      "gamma_warmup_epochs": 2,
+      "cos_margin": 0.0,
+      "norm_keep_weight": 0.1,
+      "delta_forget_pos": 1.0,
+      "k_neighbours": 10,
+      "eval_every": 3
+    },
+    "best": {
+      "self_mia": 0.8595896684374428,
+      "retain_err_m": 0.17570581070185706,
+      "forget_err_m": 0.7598778208744629,
+      "lr_test_forget_rate": 0.4776392961876833,
+      "gmm_test_forget_rate": 0.5058651026392962,
+      "lr_pseudo_agreement": 0.8273460410557185,
+      "gmm_pseudo_agreement": 0.8255131964809385,
+      "epoch": 12
+    }
+  },
+  "diverge_knn_b1.5": {
+    "ckpt_in": "/Users/michelebanfi/code/ESIT-2/data/baseline_cnn_task2.pth",
+    "variant": "knn",
+    "run_tag": "knn_b1.5",
+    "select_on": "lr_pseudo_agreement",
+    "config": {
+      "seed": 42,
+      "batch_size": 64,
+      "probe_relu_idx": [
+        2,
+        6,
+        10,
+        14,
+        18,
+        21
+      ],
+      "fisher_batch_size": 64,
+      "ssd_alphas": [
+        1.0,
+        2.0,
+        5.0,
+        10.0
+      ],
+      "ssd_lambdas": [
+        0.1,
+        0.5,
+        1.0
+      ],
+      "ssd_exclude_bn": true,
+      "ssd_exclude_head": false,
+      "retain_err_guard_m": 0.25,
+      "gmm_rate_range": [
+        0.4,
+        0.6
+      ],
+      "div_bn_idx": [
+        13,
+        17,
+        20
+      ],
+      "anchor_relu_idx": [
+        14,
+        18,
+        21
+      ],
+      "lr": 5e-05,
+      "epochs": 12,
+      "beta_anchor": 1.5,
+      "gamma_diverge": 0.5,
+      "gamma_warmup_epochs": 2,
+      "cos_margin": 0.0,
+      "norm_keep_weight": 0.1,
+      "delta_forget_pos": 1.0,
+      "k_neighbours": 10,
+      "eval_every": 3
+    },
+    "best": {
+      "self_mia": 0.8635281187030591,
+      "retain_err_m": 0.16032396198596022,
+      "forget_err_m": 0.7454404819115059,
+      "lr_test_forget_rate": 0.49193548387096775,
+      "gmm_test_forget_rate": 0.4963343108504399,
+      "lr_pseudo_agreement": 0.8379765395894428,
+      "gmm_pseudo_agreement": 0.8401759530791789,
+      "epoch": 12
+    }
+  },
+  "diverge_knn_b2": {
+    "ckpt_in": "/Users/michelebanfi/code/ESIT-2/data/baseline_cnn_task2.pth",
+    "variant": "knn",
+    "run_tag": "knn_b2",
+    "select_on": "lr_pseudo_agreement",
+    "config": {
+      "seed": 42,
+      "batch_size": 64,
+      "probe_relu_idx": [
+        2,
+        6,
+        10,
+        14,
+        18,
+        21
+      ],
+      "fisher_batch_size": 64,
+      "ssd_alphas": [
+        1.0,
+        2.0,
+        5.0,
+        10.0
+      ],
+      "ssd_lambdas": [
+        0.1,
+        0.5,
+        1.0
+      ],
+      "ssd_exclude_bn": true,
+      "ssd_exclude_head": false,
+      "retain_err_guard_m": 0.25,
+      "gmm_rate_range": [
+        0.4,
+        0.6
+      ],
+      "div_bn_idx": [
+        13,
+        17,
+        20
+      ],
+      "anchor_relu_idx": [
+        14,
+        18,
+        21
+      ],
+      "lr": 5e-05,
+      "epochs": 12,
+      "beta_anchor": 2.0,
+      "gamma_diverge": 0.5,
+      "gamma_warmup_epochs": 2,
+      "cos_margin": 0.0,
+      "norm_keep_weight": 0.1,
+      "delta_forget_pos": 1.0,
+      "k_neighbours": 10,
+      "eval_every": 3
+    },
+    "best": {
+      "self_mia": 0.8638028943029858,
+      "retain_err_m": 0.15882970175173977,
+      "forget_err_m": 0.7404263036925669,
+      "lr_test_forget_rate": 0.499266862170088,
+      "gmm_test_forget_rate": 0.5161290322580645,
+      "lr_pseudo_agreement": 0.8401759530791789,
+      "gmm_pseudo_agreement": 0.8379765395894428,
+      "epoch": 12
+    }
+  },
+  "diverge_knn_b3": {
+    "ckpt_in": "/Users/michelebanfi/code/ESIT-2/data/baseline_cnn_task2.pth",
+    "variant": "knn",
+    "run_tag": "knn_b3",
+    "select_on": "lr_pseudo_agreement",
+    "config": {
+      "seed": 42,
+      "batch_size": 64,
+      "probe_relu_idx": [
+        2,
+        6,
+        10,
+        14,
+        18,
+        21
+      ],
+      "fisher_batch_size": 64,
+      "ssd_alphas": [
+        1.0,
+        2.0,
+        5.0,
+        10.0
+      ],
+      "ssd_lambdas": [
+        0.1,
+        0.5,
+        1.0
+      ],
+      "ssd_exclude_bn": true,
+      "ssd_exclude_head": false,
+      "retain_err_guard_m": 0.25,
+      "gmm_rate_range": [
+        0.4,
+        0.6
+      ],
+      "div_bn_idx": [
+        13,
+        17,
+        20
+      ],
+      "anchor_relu_idx": [
+        14,
+        18,
+        21
+      ],
+      "lr": 5e-05,
+      "epochs": 30,
+      "beta_anchor": 3.0,
+      "gamma_diverge": 0.5,
+      "gamma_warmup_epochs": 2,
+      "cos_margin": 0.0,
+      "norm_keep_weight": 0.1,
+      "delta_forget_pos": 1.0,
+      "k_neighbours": 10,
+      "eval_every": 3
+    },
+    "best": {
+      "self_mia": 0.8809305733650852,
+      "retain_err_m": 0.13866816049403918,
+      "forget_err_m": 0.7691956085678263,
+      "lr_test_forget_rate": 0.5186950146627566,
+      "gmm_test_forget_rate": 0.5157624633431085,
+      "lr_pseudo_agreement": 0.844208211143695,
+      "gmm_pseudo_agreement": 0.842008797653959,
+      "epoch": 24
+    }
+  },
+  "diverge_knn_b4": {
+    "ckpt_in": "/Users/michelebanfi/code/ESIT-2/data/baseline_cnn_task2.pth",
+    "variant": "knn",
+    "run_tag": "knn_b4",
+    "select_on": "lr_pseudo_agreement",
+    "config": {
+      "seed": 42,
+      "batch_size": 64,
+      "probe_relu_idx": [
+        2,
+        6,
+        10,
+        14,
+        18,
+        21
+      ],
+      "fisher_batch_size": 64,
+      "ssd_alphas": [
+        1.0,
+        2.0,
+        5.0,
+        10.0
+      ],
+      "ssd_lambdas": [
+        0.1,
+        0.5,
+        1.0
+      ],
+      "ssd_exclude_bn": true,
+      "ssd_exclude_head": false,
+      "retain_err_guard_m": 0.25,
+      "gmm_rate_range": [
+        0.4,
+        0.6
+      ],
+      "div_bn_idx": [
+        13,
+        17,
+        20
+      ],
+      "anchor_relu_idx": [
+        14,
+        18,
+        21
+      ],
+      "lr": 5e-05,
+      "epochs": 30,
+      "beta_anchor": 4.0,
+      "gamma_diverge": 0.5,
+      "gamma_warmup_epochs": 2,
+      "cos_margin": 0.0,
+      "norm_keep_weight": 0.1,
+      "delta_forget_pos": 1.0,
+      "k_neighbours": 10,
+      "eval_every": 3
+    },
+    "best": {
+      "self_mia": 0.8802894302985895,
+      "retain_err_m": 0.13769400374949536,
+      "forget_err_m": 0.7671330869153017,
+      "lr_test_forget_rate": 0.5168621700879765,
+      "gmm_test_forget_rate": 0.500733137829912,
+      "lr_pseudo_agreement": 0.842375366568915,
+      "gmm_pseudo_agreement": 0.841642228739003,
+      "epoch": 27
+    }
   }
 }
