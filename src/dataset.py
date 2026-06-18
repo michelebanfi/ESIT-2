@@ -1,10 +1,15 @@
 """Dataset utilities for ESIT-D2I Task 2.
 
-The raw CSI is complex64 with shape (N, 4, 2, 4, 64).
-format_csi_for_cnn mirrors the competition notebook's preprocessing exactly:
-  1. Flatten all antenna dims -> (N, 32, 64)
-  2. Split real/imag -> (N, 2, 32, 64)
-  3. Global standardise (mean/std over the whole batch)
+format_csi_for_cnn:         mirrors the competition notebook's preprocessing exactly:
+                              1. Flatten antenna dims -> (N, 32, 64)
+                              2. Split real/imag -> (N, 2, 32, 64)
+                              3. Global standardise (one scalar mean/std over the whole array)
+
+knn_corrected_positions:    denoise forget-sample positions via kNN in CSI-PCA space.
+                              Forget labels replaced by the mean of their 10 nearest
+                              retain-set neighbours' positions (exp05 recipe).
+
+make_tensor_dataset:        convenience loader returning a TensorDataset.
 """
 import numpy as np
 import torch
@@ -20,6 +25,44 @@ def format_csi_for_cnn(csi_complex: np.ndarray) -> torch.Tensor:
     csi_2ch = np.stack([np.real(csi), np.imag(csi)], axis=1).astype(np.float32)
     csi_2ch = (csi_2ch - csi_2ch.mean()) / (csi_2ch.std() + 1e-8)
     return torch.tensor(csi_2ch, dtype=torch.float32)
+
+
+def knn_corrected_positions(csi_complex: np.ndarray,
+                            pos: np.ndarray,
+                            forget_mask: np.ndarray,
+                            k: int = 10,
+                            n_pca: int = 64,
+                            seed: int = 42) -> np.ndarray:
+    """Denoise forget-sample positions via kNN in CSI-PCA space (exp05 recipe).
+
+    For each forget sample, replaces its labelled position with the mean of its k
+    nearest retain-set neighbours' positions found in the n_pca-dimensional PCA of
+    |CSI| magnitudes.  Retain positions are left untouched.
+
+    Parameters
+    ----------
+    csi_complex : raw complex CSI array, shape (N, ...).
+    pos         : 2-D (x, y) position array, shape (N, 2).
+    forget_mask : boolean mask of length N, True = forget sample.
+    k, n_pca, seed : hyperparameters (defaults match exp05 / exp08 configs).
+
+    Returns
+    -------
+    pos_corrected : copy of pos with forget rows replaced by kNN estimates.
+    """
+    from sklearn.decomposition import PCA
+    from sklearn.neighbors import NearestNeighbors
+
+    n = len(csi_complex)
+    retain_mask = ~forget_mask
+    mag = np.abs(csi_complex.reshape(n, -1)).astype(np.float32)
+    feats = PCA(n_components=n_pca, random_state=seed).fit_transform(mag)
+    nn_idx = (NearestNeighbors(n_neighbors=k)
+              .fit(feats[retain_mask])
+              .kneighbors(feats[forget_mask], return_distance=False))
+    pos_corrected = pos.copy()
+    pos_corrected[forget_mask] = pos[retain_mask][nn_idx].mean(axis=1)
+    return pos_corrected
 
 
 def make_tensor_dataset(csi_path: str, pos_path: str,

@@ -1,0 +1,26 @@
+\frametitle{Conclusion \& reproducibility}
+
+\begin{block}{Summary}
+\begin{enumerate}
+  \item \textbf{Diagnosis}: contamination = corrupted position labels.
+    Error = corruption magnitude.
+  \item \textbf{Probing}: CNN linearly separates forget/retain in activation space
+    (AUC 0.986 at block 5). Parameter-space detachment fails (entangled Fisher).
+  \item \textbf{Method}: hinge-cosine push on pre-ReLU BN + retain post-ReLU anchor
+    + kNN corrected position loss.
+  \item \textbf{Result}: offline LR{\raise.1ex\hbox{\scriptsize$\sim$}}acc 0.8442 (diverge) / 0.8475 (relabel).
+\end{enumerate}
+\end{block}
+
+\medskip
+\textbf{One-command repro}:
+{\footnotesize
+\begin{verbatim}
+python scripts/unlearning/diverge.py \
+    --forget-target knn --beta-anchor 3 --epochs 30
+python scripts/submission/make_submission.py \
+    --ckpt experiments/diverge/model_official_knn_b3.pth \
+    --out my_submission.csv
+\end{verbatim}
+}
+

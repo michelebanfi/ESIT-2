@@ -1,0 +1,10 @@
+\beamer@sectionintoc {1}{Task \& Mandatory Metric}{3}{0}{1}
+\beamer@sectionintoc {2}{Data \& Preprocessing}{5}{0}{2}
+\beamer@sectionintoc {3}{Model Architecture}{8}{0}{3}
+\beamer@sectionintoc {4}{Contamination Diagnosis}{10}{0}{4}
+\beamer@sectionintoc {5}{Probing the Baseline}{13}{0}{5}
+\beamer@sectionintoc {6}{Method: Activation-Trajectory Divergence}{19}{0}{6}
+\beamer@sectionintoc {7}{Effect on the Activation Space}{25}{0}{7}
+\beamer@sectionintoc {8}{Training Dynamics \& Ablation}{28}{0}{8}
+\beamer@sectionintoc {9}{Results}{31}{0}{9}
+\beamer@sectionintoc {10}{Conclusion}{34}{0}{10}
