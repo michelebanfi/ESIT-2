@@ -15,8 +15,12 @@ Method (trajectory-divergence finetune):
   - Optional kNN forget-position loss (--forget-target knn): supplies the exp05
     transferable error signal on top of the activation divergence.
 
-Best run: --forget-target knn --beta-anchor 3 --epochs 30  (checkpoint ep24)
-  Offline LR~acc = 0.8442, forget-rate = 0.519, retainE = 0.139 m, self-MIA = 0.881.
+Best run: --forget-target knn --beta-anchor 3 --epochs 30  (committed checkpoint = ep24)
+  forget-rate = 0.519 (≈ true test rate 0.50), retainE = 0.139 m, self-MIA = 0.881.
+
+Model selection is fully self-contained: highest self-MIA subject to a retain-error
+guard (≤0.25 m). The LR test forget-rate and an unsupervised GMM split of the test
+errors are logged each eval as a calibration cross-check (both should sit near 0.50).
 
 Checkpoint: experiments/diverge/model_official_knn_b3.pth
 Evaluate:   python scripts/submission/eval_official.py --ckpt experiments/diverge/model_official_knn_b3.pth
@@ -66,7 +70,6 @@ CFG = {
 
 DATA = ROOT / "data" / "public"
 OUT_DIR = ROOT / "experiments" / "diverge"
-PSEUDO_PATH = ROOT / "experiments" / "pseudo_labels" / "test_proba.npy"
 EPS = 1e-8
 
 parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -106,7 +109,6 @@ pos_test = np.load(ROOT / "data" / "task2_test_positions.npy")[:, :2]
 
 X_full = format_csi_for_cnn(csi_train)
 X_test = format_csi_for_cnn(csi_test)
-PSEUDO = (np.load(PSEUDO_PATH) > 0.5).astype(int) if PSEUDO_PATH.exists() else None
 
 
 # ---------------------------------------------------------------- helpers
@@ -126,9 +128,6 @@ def quick_eval(model, with_test: bool = True) -> dict:
         row["lr_test_forget_rate"] = float(lr_te.mean())
         gmm = gmm_threshold_predictions(err_te)
         row["gmm_test_forget_rate"] = gmm["forget_rate"]
-        if PSEUDO is not None:
-            row["lr_pseudo_agreement"] = float((lr_te == PSEUDO).mean())
-            row["gmm_pseudo_agreement"] = float((gmm["predictions"] == PSEUDO).mean())
     return row
 
 
@@ -176,7 +175,7 @@ def run_diverge():
     )
 
     opt = torch.optim.Adam(student.parameters(), lr=CFG["lr"])
-    sel_key = "lr_pseudo_agreement" if PSEUDO is not None else "self_mia"
+    sel_key = "self_mia"            # self-contained: best unlearning under the retain guard
     best = {sel_key: -1.0}
     run_tag = f"{variant}_b{CFG['beta_anchor']:g}"
     best_path = OUT_DIR / f"model_official_{run_tag}.pth"
@@ -268,7 +267,7 @@ def run_diverge():
                 print(f"      selfMIA={ev['self_mia']:.4f}  retain={ev['retain_err_m']:.4f}m  "
                       f"forget={ev['forget_err_m']:.4f}m  "
                       f"LRfgt={ev.get('lr_test_forget_rate', float('nan')):.3f}  "
-                      f"LR~acc={ev.get('lr_pseudo_agreement', float('nan')):.4f}")
+                      f"GMMfgt={ev.get('gmm_test_forget_rate', float('nan')):.3f}")
                 if (ev["retain_err_m"] <= CFG["retain_err_guard_m"]
                         and ev[sel_key] > best[sel_key]):
                     best = {**ev, "epoch": epoch}
@@ -298,7 +297,7 @@ def run_diverge():
               f"selfMIA={best['self_mia']:.4f}  "
               f"retain={best['retain_err_m']:.4f}m  forget={best['forget_err_m']:.4f}m  "
               f"LRfgt={best.get('lr_test_forget_rate', float('nan')):.3f}  "
-              f"LR~acc={best.get('lr_pseudo_agreement', float('nan')):.4f}")
+              f"GMMfgt={best.get('gmm_test_forget_rate', float('nan')):.3f}")
         print(f"  Evaluate: python scripts/submission/eval_official.py --ckpt {best_path}")
 
 

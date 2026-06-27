@@ -1,16 +1,17 @@
 %% ============================================================
 %% ESIT-D2I 2026 — Task 2: Machine Unlearning
-%% Activation-Trajectory Divergence for CSI Localization
+%% Two unlearning families + a small ensemble
 %% ============================================================
 \documentclass[10pt]{beamer}
 \usetheme[progressbar=frametitle,block=fill]{metropolis}
+\metroset{sectionpage=none}   % lean talk: no section-divider slides
 
 %% ---- packages -------------------------------------------------------
 \usepackage{amsmath,amssymb,mathtools}
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{tikz}
-\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc}
 \usepackage{xcolor}
 \usepackage{array}
 \usepackage{microtype}
@@ -22,7 +23,7 @@
 \definecolor{cTeacher}{RGB}{170,170,170}
 \definecolor{cAccent}{RGB}{243,166,18}
 
-%% ---- macros (careful: \alt and \F conflict in beamer) ---------------
+%% ---- macros ---------------------------------------------------------
 \newcommand{\Rset}{\mathcal{R}}           % retain set
 \newcommand{\Fset}{\mathcal{F}}           % forget set
 \newcommand{\fth}{f_{\theta}}             % student model
@@ -30,8 +31,7 @@
 \newcommand{\yi}{\mathbf{y}_i}            % original label
 \newcommand{\ycorr}{\hat{\mathbf{y}}^{\mathrm{corr}}}   % kNN-corrected label
 \newcommand{\yhat}{\hat{\mathbf{y}}}      % prediction
-% activation notation: \asl = student layer-l acts; \atl = teacher layer-l acts
-\newcommand{\asl}{\mathbf{a}^{\ell}_{s}}  % student activation (no extra subscript)
+\newcommand{\asl}{\mathbf{a}^{\ell}_{s}}  % student activation
 \newcommand{\atl}{\mathbf{a}^{\ell}_{t}}  % teacher activation
 \newcommand{\aal}{\bar{\mathbf{a}}^{\ell}} % channel-mean activation
 \newcommand{\ei}{e_i}                      % per-sample error
@@ -47,186 +47,73 @@
 \graphicspath{{../figures/}}
 
 %% ---- title info -----------------------------------------------------
-\title{Activation-Trajectory Divergence for\\Machine Unlearning}
-\subtitle{ESIT-D2I 2026 Task 2 --- CSI Indoor Localization}
+\title{ESIT-2026 Challenge - Task 2}
+% \subtitle{ESIT-D2I 2026 Task 2 --- CSI indoor localization}
 \author{Michele Banfi}
 \date{June 2026}
-\institute{3\textsuperscript{rd} place --- Public LB 0.92787 (ensemble)\\
-           Compliant single-model: offline LR{\raise.1ex\hbox{\scriptsize$\sim$}}acc \textbf{0.8475 / 0.8442}}
 
 \begin{document}
 
-% ─────────────────────────────────────────────────────────────────────────────
 \maketitle
-% ─────────────────────────────────────────────────────────────────────────────
 
 % ─────────────────────────────────────────────────────────────────────────────
-\begin{frame}{Outline}
-  \tableofcontents
-\end{frame}
-% ─────────────────────────────────────────────────────────────────────────────
+\section{Task \& metric}
 
-\section{Task \& Mandatory Metric}
-
-\begin{frame}{Task \& mandatory evaluation}
+\begin{frame}{The task and the fixed metric}
 
 \begin{block}{Problem}
-A pretrained CNN $\fth$ was trained on data containing a contaminated subset
-$\Fset$ (\texttt{is\_forget}$=1$).  \textbf{Goal}: remove $\Fset$'s influence
-\emph{without retraining from scratch}, preserving accuracy on the clean
-retain set $\Rset$ and the unseen test set.
+A pretrained CNN $\fth$ was trained on data with a contaminated subset $\Fset$
+(\texttt{is\_forget}$=1$). \textbf{Remove $\Fset$'s influence without retraining from
+scratch}, preserving accuracy on the retain set $\Rset$ and the unseen test set.
 \end{block}
 
 \medskip
-\begin{block}{Mandatory evaluation scheme (2026-06-17 clarification)}
+\begin{block}{Mandatory evaluation --- the only freedom is the fine-tune}
 \[
-  \underbrace{\text{one fine-tuned model}}_{\text{must start from baseline}}
-  \;\xrightarrow{\;\text{train}\;}\;
-  \underbrace{e_i = \norm{\fth(x_i)-\yi}_2}_{\text{vs.~\emph{original} (corrupted) labels}}
-  \;\xrightarrow{\;\text{LR}\;}\;
-  \hat{z} \in \{0,1\}
+  \underbrace{\text{one fine-tuned model}}_{\text{start from baseline}}
+  \;\to\;
+  \underbrace{e_i = \norm{\fth(x_i)-\yi}_2}_{\text{vs.\ \emph{original} labels}}
+  \;\xrightarrow{\;\text{LogReg}\;}\;
+  \hat{z}\in\{0,1\}
 \]
-\textbf{Single model only.}  No ensembles, no GMM thresholds, no OOF cross-fitting.
+\textbf{Single model only} --- no ensembles / thresholds / cross-fitting in the final path.
 \end{block}
 
 \medskip
-\textbf{Key insight}:
-$\;\mathbb{E}_{\Fset}[e_i] \gg \mathbb{E}_{\Rset}[e_i]$
-$\iff$ good unlearning $\iff$ high LR accuracy.
+\centering
+\textbf{Good unlearning} $\iff$
+$\mathbb{E}_{\Fset}[e_i] \gg \mathbb{E}_{\Rset}[e_i]$
+$\iff$ the detector separates them.
 
 \end{frame}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Data \& Preprocessing}
-
-\begin{frame}{Dataset: DICHASUS Arena2036 CSI}
-
-\begin{columns}[T]
-\begin{column}{0.52\textwidth}
-\textbf{Train set:}
-\begin{itemize}
-  \item $N = 10{,}918$ samples
-  \item Retain ($z=0$): $6{,}823$ \textcolor{cRetain}{$\bullet$}
-  \item Forget ($z=1$): $4{,}095$ \textcolor{cForget}{$\bullet$}
-  \item Predict 2-D position $(x,y)\in\mathbb{R}^2$
-    ($z \approx 0.94\,\mathrm{m}$, constant)
-\end{itemize}
-
-\medskip
-\textbf{Test set:} $2{,}728$ samples;
-test positions available (\texttt{task2\_test\_positions.npy}).
-\end{column}
-\begin{column}{0.44\textwidth}
-\textbf{Raw CSI shape:}
-\[
-  \underbrace{(N,\;4,\;2,\;4,\;64)}_{\text{samples}\times\text{AP}\times\text{pol}\times\text{ant}\times\text{sub}}
-\]
-dtype: \texttt{complex64}
-\end{column}
-\end{columns}
-
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\begin{frame}{Preprocessing pipeline (\texttt{format\_csi\_for\_cnn})}
-
-\textbf{Function}: \texttt{src/dataset.py :: format\_csi\_for\_cnn}
-
-\medskip
-\begin{enumerate}
-  \item \textbf{Flatten antenna dims:}
-    $(N,4,2,4,64) \;\longrightarrow\; (N,32,64)$
-
-  \item \textbf{Stack real and imaginary parts as two channels:}
-    $(N,32,64) \;\longrightarrow\; (N,2,32,64)$, dtype \texttt{float32}
-
-  \item \textbf{Global standardisation}
-    (one scalar $\mu, \sigma$ over the \emph{entire} array):
-    \[
-      \hat{X} \;=\; \frac{X - \mu}{\sigma + 10^{-8}},
-      \qquad \mu = \mathrm{mean}(X),\quad \sigma = \mathrm{std}(X)
-    \]
-    Matches the competition notebook exactly.
-\end{enumerate}
-
-\medskip
-Positions: only $(x,y)$ used; $z$ dropped (\texttt{pos[:,:2]}).
-
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Model Architecture}
-
-\begin{frame}{DichasusPositionPredictor}
-
-\textbf{Input}: $(B,2,32,64)$ \quad \textbf{Output}: $(B,2)$ --- predicted $(x,y)$
-
-\medskip
-\begin{center}
-\begin{tikzpicture}[font=\small,
-  block/.style={draw, rounded corners=3pt, minimum width=1.25cm, minimum height=0.6cm,
-                align=center, fill=cRetain!15},
-  head/.style={draw, rounded corners=3pt, minimum width=1.35cm, minimum height=0.6cm,
-               align=center, fill=cAccent!25},
-  arr/.style={-Latex, thick}]
-
-  \def\gap{1.52}
-  \foreach \ch/\i/\lab in {32/0/B1,64/1/B2,128/2/B3,256/3/B4,512/4/B5,512/5/B6}{
-    \node[block] (b\i) at (\i*\gap, 0) {\lab\\\scriptsize\ch ch};
-  }
-  \node[head]  (pool) at (6*\gap, 0) {AvgPool\\$(1{\times}1)$};
-  \node[head]  (hed)  at (7*\gap, 0) {Linear\\$512{\to}2$};
-
-  \foreach \from/\to in {b0/b1,b1/b2,b2/b3,b3/b4,b4/b5,b5/pool,pool/hed}{
-    \draw[arr] (\from) -- (\to);
-  }
-  \foreach \i in {0,1,2,3}{
-    \node[below=4pt of b\i, font=\scriptsize, text=gray] {+Pool};
-  }
-  \node[above=9pt of b3, font=\tiny, text=cForget,  align=center]
-        {BN $[13,17,20]$\\diverge};
-  \node[above=3pt of b5, font=\tiny, text=cRetain, align=center]
-        {ReLU $[14,18,21]$\\anchor};
-\end{tikzpicture}
-\end{center}
-
-\smallskip
-Each block: Conv2d$(k=3,\,\mathrm{pad}=1)\to\mathrm{BN}\to\mathrm{ReLU}[\to\mathrm{MaxPool}_{2\times2}]$.\\
-\textbf{Blocks 5--6 have no MaxPool.}
-Hook index $i$ addresses \texttt{model.features[i]} in the \texttt{nn.Sequential}.
-
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Contamination Diagnosis}
+\section{The unlearning signal}
 
 \begin{frame}{What is the contamination?}
 
 \begin{columns}[T]
-\begin{column}{0.52\textwidth}
-\textbf{Hypothesis}: forget labels are \emph{corrupted positions} --- the CSI
-is genuine but the stored $(x,y)$ is wrong.
+\begin{column}{0.54\textwidth}
+\textbf{The forget labels are corrupted positions} --- the CSI is genuine, the stored
+$(x,y)$ is wrong.
 
 \medskip
-\textbf{kNN-consistency score}: for sample $i$, find its 10 nearest
-retain-set neighbours in 64-dim PCA of $|\mathrm{CSI}|$:
-\[
-  c_i = \frac{1}{K}\sum_{j \in \mathrm{kNN}_{\Rset}(i)}
-        \norm{\mathbf{p}_j - \yi}_2
-\]
+\textbf{kNN-consistency} (label vs.\ its 10 nearest \emph{retain} neighbours, CSI-PCA space):
 
-\medskip
+\smallskip
 \begin{tabular}{lcc}
 \toprule
  & Retain & Forget \\
 \midrule
-Mean $c_i$ & $0.32\,\mathrm{m}$ & $1.21\,\mathrm{m}$ \\
-AUC$(z|c)$ & \multicolumn{2}{c}{$0.936$} \\
+mean shift & $0.32\,\mathrm{m}$ & $1.21\,\mathrm{m}$ \\
+AUC$(z\,|\,\text{shift})$ & \multicolumn{2}{c}{$0.936$} \\
 \bottomrule
 \end{tabular}
 
 \medskip
-$\Rightarrow$ Forget labels are \textbf{4$\times$ less consistent} with their CSI.
+If the model predicts the \emph{true} position,
+$\;e_i \approx \norm{\mathbf{y}^{\mathrm{true}}_i - \yi}_2$ ---
+\textcolor{cAccent}{\textbf{error = corruption magnitude}}, which \textbf{transfers to test}.
 \end{column}
 \begin{column}{0.44\textwidth}
   \includegraphics[width=\textwidth]{01_contamination_shift.pdf}
@@ -236,511 +123,232 @@ $\Rightarrow$ Forget labels are \textbf{4$\times$ less consistent} with their CS
 \end{frame}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\begin{frame}{The unlearning objective}
+\section{Two unlearning families}
 
-The detector reads $e_i = \norm{\fth(x_i) - \yi}_2$ (vs.\ original labels).
-Good unlearning:
-\[
-  \mathbb{E}_{i\in\Fset}[e_i] \;\gg\; \mathbb{E}_{i\in\Rset}[e_i],
-  \qquad
-  \mathbb{E}_{i\in\Rset}[e_i] \;\approx\; \mathrm{const}.
-\]
+\begin{frame}{Family A --- Relabel: denoise the labels}
+
+\textbf{Idea}: give the model a \emph{trusted} target for each forget sample, then
+fine-tune. The error against the \emph{original} label then equals the corruption.
 
 \medskip
-\textbf{Key observation}: if the model predicts the \emph{true} position,
-then for a forget sample with corrupted label $\yi$:
-\[
-  e_i \;=\; \norm{\fth(x_i) - \yi}_2
-     \;\approx\; \underbrace{\norm{\mathbf{y}_i^{\mathrm{true}} - \yi}_2}_{\text{corruption magnitude}}.
-\]
-\textbf{Error $=$ corruption magnitude} --- a signal that transfers to test
-because the corruption is there too.
-
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Probing the Baseline}
-
-\begin{frame}{Does the CNN already ``know'' forget samples?}
-
-\begin{columns}[T]
-\begin{column}{0.52\textwidth}
-\textbf{Procedure}:
 \begin{enumerate}
-  \item Hook post-ReLU outputs at blocks 1--6
-    (indices $\{2,6,10,14,18,21\}$).
-  \item Compute channel-mean activations:
-    \[
-      \aal_i = \frac{1}{HW}\sum_{h,w} a^{\ell}_{i,c,h,w}
-      \;\in\;\mathbb{R}^{C_\ell}
-    \]
-  \item Fit LogReg + StandardScaler, 5-fold CV; report ROC-AUC.
+  \item For each forget sample $i$, find its $k=10$ nearest \textbf{retain} neighbours
+    in the 64-dim PCA of $|\mathrm{CSI}|$.
+  \item Replace its label with their mean position:
+    $\;\ycorr_i = \frac{1}{k}\sum_{j\in\mathrm{kNN}_\Rset(i)} \mathbf{p}_j$
+    \quad(retain labels untouched).
+  \item Fine-tune on the corrected targets.
 \end{enumerate}
 
-\vspace{4pt}
-\textbf{Result}: AUC rises \textbf{0.948} (B1) $\to$ \textbf{0.986} (B5).
-The CNN linearly separates forget from retain internally.
-\end{column}
-\begin{column}{0.44\textwidth}
-  \includegraphics[width=\textwidth]{03_probe_auc_by_block.pdf}
-\end{column}
-\end{columns}
-
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\begin{frame}{Activation-space separation (block 5)}
-
-\begin{center}
-  \includegraphics[width=0.88\textwidth]{04_activation_scatter.pdf}
-\end{center}
+\medskip
+\begin{block}{Why it works for the metric}
+The model learns the true position $\Rightarrow$ for a forget sample the error vs.\ the
+\emph{original} (corrupted) label is large and \textbf{transfers exactly} to the test set.
+\end{block}
 
 \smallskip
 \footnotesize
-LDA discriminant projection of 512-dim channel-mean activations at block 5 (baseline model).
-Forget (\textcolor{cForget}{$\blacksquare$}) and retain (\textcolor{cRetain}{$\blacksquare$})
-peaks are clearly separated along the single optimal discriminant direction
-$\Rightarrow$ unlearning should act in \emph{activation space}.
+Result: self-MIA $0.927$, \quad retain error $0.114\,\mathrm{m}$,
+\quad forget error $0.861\,\mathrm{m}$.
 
 \end{frame}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\begin{frame}{Channel-level separability: Cohen's $d$}
+\begin{frame}{Family B --- Activation-trajectory divergence}
 
-\begin{center}
-  \includegraphics[width=0.88\textwidth]{05_cohens_d_by_block.pdf}
-\end{center}
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+\textbf{Motivation}: the CNN \emph{already} separates forget from retain internally
+(probe AUC \textbf{0.986} at block 5), yet parameter-space dampening (SSD) \emph{fails}
+(Fisher importance entangled). \textbf{So act in activation space.}
 
 \smallskip
-\footnotesize
-Pooled-std Cohen's $d = (\mu_{\Fset} - \mu_{\Rset})/\sigma_{\mathrm{pool}}$ per
-channel at each block.  Separability deepens with depth; blocks 4--6 carry the
-strongest signal.
+\textbf{Method} (vs.\ frozen teacher $\fthn$):
+\begin{itemize}
+  \item \textcolor{cForget}{\textbf{Diverge}} forget pre-ReLU acts off-trajectory.
+  \item \textcolor{cRetain}{\textbf{Anchor}} retain post-ReLU acts to the teacher.
+  \item $+$ kNN forget-position loss (transferable signal).
+\end{itemize}
 
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\begin{frame}{Fisher importance: where does forget influence live?}
-
-\begin{columns}[T]
-\begin{column}{0.52\textwidth}
-\textbf{Diagonal empirical Fisher}:
-\[
-  \mathcal{I}_{\theta} \;=\;
-  \mathbb{E}\!\left[\!\left(
-    \frac{\partial L_{\mathrm{MSE}}}{\partial \theta}
-  \right)^{\!2}\right]
-\]
-Computed separately on $\Fset$ (corrupted labels) and $\Rset$.
-
-\medskip
-\textbf{Fraction of weights} with
-$\mathcal{I}^{\Fset} / \mathcal{I}^{\Rset} > 5$:
-
-\medskip
-Forget-dominant mass concentrates in \textbf{blocks 2--4}.  Blocks 5--6 are
-less forget-specific despite having the most separable activations.
+\smallskip
+\footnotesize Real representational change, not just a relabel.
 \end{column}
-\begin{column}{0.44\textwidth}
-  \includegraphics[width=\textwidth]{06_fisher_ratio_by_block.pdf}
-\end{column}
-\end{columns}
-
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\begin{frame}{Negative result: SSD fails}
-
-\begin{columns}[T]
-\begin{column}{0.52\textwidth}
-\textbf{Selective Synaptic Dampening}:
-if $\mathcal{I}^{\Fset}_k > \alpha\cdot\mathcal{I}^{\Rset}_k$,
-multiply weight $k$ by
-$\min\!\bigl(\lambda\,\mathcal{I}^{\Rset}_k/\mathcal{I}^{\Fset}_k,\,1\bigr)$.
-Grid: $\alpha\!\in\!\{1,2,5,10\}$, $\lambda\!\in\!\{0.1,0.5,1.0\}$.
-BN recalibration on retain after dampening.
-
-\medskip
-\textbf{Green box} = target region.
-\textbf{No point passes the retain guard.}
-Retain and forget errors collapse in lockstep.
-
-\medskip
-\textbf{Conclusion}: forget/retain Fisher importances are \emph{entangled}.
-Must act in \textbf{activation space}.
-\end{column}
-\begin{column}{0.44\textwidth}
-  \includegraphics[width=\textwidth]{07_ssd_negative_result.pdf}
-\end{column}
-\end{columns}
-
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Method: Activation-Trajectory Divergence}
-
-\begin{frame}{Method overview}
-
-\textbf{Trajectory view}: a forward pass is a trajectory through activation space.
-Frozen teacher $\fthn$ defines the reference.
-
-\medskip
-\begin{center}
-\begin{tikzpicture}[font=\small, node distance=1.2cm]
+\begin{column}{0.46\textwidth}
+\centering
+\begin{tikzpicture}[font=\scriptsize, node distance=0.7cm]
   \node (x) {$x_i$};
-  \node[right=1.0 of x] (b14) {$\mathbf{a}^{1\text{-}3}$};
-  \node[right=1.0 of b14] (b46) {$\mathbf{a}^{4\text{-}6}$};
-  \node[right=1.0 of b46] (out) {$\hat{\mathbf{y}}$};
+  \node[right=0.6 of x] (mid) {$\mathbf{a}^{4\text{-}6}$};
+  \node[right=0.85 of mid] (out) {$\hat{\mathbf{y}}$};
+  \draw[-Latex] (x) -- (mid);
+  \draw[-Latex] (mid) -- (out);
+  \draw[-Latex,cRetain,thick,bend right=22]
+    (mid.south) to node[below,font=\tiny,cRetain]{retain: stay} (out.south);
+  \draw[-Latex,cForget,thick,dashed,bend left=28]
+    (mid.north) to node[above,font=\tiny,cForget]{forget: diverge} (out.north);
+\end{tikzpicture}
 
-  \draw[-Latex] (x) -- (b14);
-  \draw[-Latex] (b14) -- (b46);
-  \draw[-Latex] (b46) -- (out);
+\smallskip
+  \includegraphics[width=0.8\textwidth]{03_probe_auc_by_block.pdf}
+\end{column}
+\end{columns}
 
-  \draw[-Latex,cRetain,thick,bend right=25]
-    (b46.south) to node[below,font=\scriptsize,cRetain]
-      {retain: \textbf{stay} on trajectory} (out.south);
+\end{frame}
 
-  \draw[-Latex,cForget,thick,dashed,bend left=30]
-    (b46.north) to node[above,font=\scriptsize,cForget]
-      {forget: \textbf{diverge} off trajectory} (out.north);
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{frame}{The small ensemble}
+
+\textbf{Why ensemble?} The two families make \emph{complementary} errors:
+relabel gives a clean transferable signal; divergence detaches the representation.
+Averaging their per-sample errors before the detector yields a \textbf{more separable}
+error distribution.
+
+\medskip
+\begin{center}
+\begin{tikzpicture}[font=\small,
+  mod/.style={draw, rounded corners=3pt, minimum width=2.4cm, minimum height=0.7cm, align=center},
+  op/.style={draw, rounded corners=3pt, minimum width=2.2cm, minimum height=0.7cm, align=center, fill=cAccent!20},
+  arr/.style={-Latex, thick}]
+  \node[mod, fill=cRetain!15] (a) {Relabel model};
+  \node[mod, fill=cForget!15, below=0.35 of a] (b) {Divergence model};
+  \node[op, right=1.1 of $(a)!0.5!(b)$] (avg) {average\\errors $\bar e_i$};
+  \node[op, right=0.9 of avg, fill=cTeacher!25] (det) {fixed LR\\detector};
+  \node[right=0.8 of det] (out) {\texttt{is\_forget}};
+  \draw[arr] (a.east) -- (avg.west);
+  \draw[arr] (b.east) -- (avg.west);
+  \draw[arr] (avg) -- (det);
+  \draw[arr] (det) -- (out);
 \end{tikzpicture}
 \end{center}
 
 \medskip
-\textbf{Design choices}:
 \begin{itemize}
-  \item \emph{Where?} Blocks 4--6: highest separability, deepest representations.
-  \item \emph{Pre-ReLU BN} outputs for divergence: \emph{signed} activations make
-    the cosine push geometrically well-defined (no all-zero collapse shortcut).
-  \item \emph{Post-ReLU} for retain anchor: non-negative, shape-preserving.
+  \item Members span both families ($+$ a gradient-ascent variant for diversity).
+  \item Organizers later mandated \emph{single-model} $\Rightarrow$ each family becomes a
+    standalone compliant submission.
 \end{itemize}
-
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\begin{frame}{Loss function}
-
-Student $\fth$ (trained), frozen teacher $\fthn$.
-Hooks at $\mathcal{L}_{\mathrm{div}}\!=\!\{13,17,20\}$ (pre-ReLU BN) and
-$\mathcal{L}_{\mathrm{anc}}\!=\!\{14,18,21\}$ (post-ReLU), blocks 4--6.
-
-\begin{block}{Total loss}
-\[
-  \mathcal{L} = \underbrace{\Lpos}_{\text{retain pos.}}
-  + \;\beta\,\underbrace{\Lanc}_{\text{retain anchor}}
-  + \;\gamma_t\,\underbrace{\Ldiv}_{\text{forget diverge}}
-  + \;\nu\,\underbrace{\Lnorm}_{\text{norm-keeper}}
-  + \;\delta\,\underbrace{\Lposf}_{\text{forget pos.}}
-\]
-\end{block}
-
-\smallskip
-\textbf{Retain position MSE}:\quad
-$\Lpos = \mathbb{E}_{i\in\Rset}\norm{\fth(x_i) - \yi}^2$
-
-\smallskip
-\textbf{Retain anchor} (relative squared deviation from teacher):
-\[
-  \Lanc = \frac{1}{|\mathcal{L}_{\mathrm{anc}}|}
-  \sum_{\ell\in\mathcal{L}_{\mathrm{anc}}}
-  \mathbb{E}_{i\in\Rset}\!\left[
-    \frac{\norm{\asl - \atl}^2}{\norm{\atl}^2 + \EPS}
-  \right]
-\]
-Pins student retain activations to teacher's trajectory.
-
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\begin{frame}{Loss function --- forget terms}
-
-\textbf{Forget diverge} (hinged cosine at pre-ReLU BN layers):
-\[
-  \Ldiv = \frac{1}{|\mathcal{L}_{\mathrm{div}}|}
-  \sum_{\ell\in\mathcal{L}_{\mathrm{div}}}
-  \mathbb{E}_{i\in\Fset}\!\left[
-    \mathrm{ReLU}\!\Bigl(\cos(\asl, \atl) - m\Bigr)
-  \right],\quad m=0
-\]
-Penalises only \emph{positive} cosine; saturates once orthogonal/anti-aligned.
-
-\medskip
-\textbf{Norm-keeper} (blocks all-zero collapse):
-\[
-  \Lnorm = \frac{1}{|\mathcal{L}_{\mathrm{div}}|}
-  \sum_{\ell\in\mathcal{L}_{\mathrm{div}}}
-  \mathbb{E}_{i\in\Fset}\!\left[\left(
-    \frac{\norm{\asl}_2 - \norm{\atl}_2}{\norm{\atl}_2 + \EPS}
-  \right)^{\!2}\right]
-\]
-
-\textbf{kNN-corrected forget position loss} (\texttt{--forget-target knn}):
-\[
-  \Lposf = \mathbb{E}_{i\in\Fset}\norm{\fth(x_i) - \ycorr_i}^2
-\]
-
-$\gamma_t = \gamma\cdot\min\!\bigl(1,\,\text{epoch}/2\bigr)$ warms up over 2 epochs.
-Hyperparameters: $\beta=3$, $\gamma=0.5$, $\nu=0.1$, $\delta=1$.
-
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\begin{frame}{kNN-corrected forget positions}
-
-\textbf{Why needed}: the cosine divergence pushes forget activations off-trajectory
-but does not specify \emph{where} they should land.  Without a position target the
-model has no incentive to produce a large error at test time.
-
-\medskip
-\textbf{Algorithm} (\texttt{src/dataset.py :: knn\_corrected\_positions}):
-\begin{enumerate}
-  \item Compute $|\mathrm{CSI}|$ magnitudes, flatten to $(N, 2048)$.
-  \item Reduce to 64-dim PCA features.
-  \item For each forget sample $i$: find $k=10$ nearest retain neighbours;
-    \[
-      \ycorr_i \;=\; \frac{1}{k}\sum_{j\in\mathrm{kNN}_{\Rset}(i)} \mathbf{p}_j
-    \]
-    (mean of their \emph{trusted} positions; retain labels unchanged).
-\end{enumerate}
-
-\medskip
-Mean shift: $\approx 1.2\,\mathrm{m}$.
-This supplies the same transferable error signal as the pure relabel method (exp05)
-\emph{on top of} the representational divergence.
-
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\begin{frame}{Hyperparameters (winning run)}
-
-\begin{center}
-\footnotesize
-\begin{tabular}{lll}
-\toprule
-Parameter & Symbol & Value \\
-\midrule
-Retain anchor strength & $\beta$ & \textbf{3.0} \\
-Diverge weight (target) & $\gamma$ & 0.5 (ramp 2 ep) \\
-Norm-keeper weight & $\nu$ & 0.1 \\
-kNN position weight & $\delta$ & 1.0 \\
-Cosine margin & $m$ & 0.0 \\
-Learning rate & & $5\times10^{-5}$ (Adam) \\
-Batch size & & 64 \\
-Total epochs & & 30 (checkpoint ep 24) \\
-BN running stats & & frozen \\
-\midrule
-Diverge layers & $\ell\in\mathcal{L}_{\mathrm{div}}$ & 13, 17, 20 (pre-ReLU BN) \\
-Anchor layers & $\ell\in\mathcal{L}_{\mathrm{anc}}$ & 14, 18, 21 (post-ReLU) \\
-kNN neighbours & $k$ & 10, PCA-64 of $|\mathrm{CSI}|$ \\
-Model selection & & best offline LR{\raise.1ex\hbox{\scriptsize$\sim$}}acc, retain guard $\leq$0.25m \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Effect on the Activation Space}
-
-\begin{frame}{Before vs.\ after: forget displaced, retain anchored}
-
-\begin{center}
-  \includegraphics[width=0.92\textwidth]{08_effect_before_after.pdf}
-\end{center}
-
-\footnotesize
-Block-5 channel-mean activations (512-dim).
-\textbf{Left}: LDA discriminant projection --- the \textcolor{cForget}{forget distribution} shifts
-after unlearning; \textcolor{cRetain}{retain} stays put.
-\textbf{Right}: per-sample $\ell_2$ displacement from the baseline trajectory ---
-forget samples are moved significantly further than retain.
-
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\begin{frame}{Cosine similarity: teacher vs.\ student}
-
-\begin{center}
-  \includegraphics[width=0.90\textwidth]{09_effect_cosine_hist.pdf}
-\end{center}
-
-\footnotesize
-$\cos(\asl, \atl)$ at blocks 4--6 pre-ReLU BN layers after training.
-\textcolor{cForget}{Forget}: pushed towards $0$/negative.
-\textcolor{cRetain}{Retain}: anchored near 1.
-Norm ratio $\norm{\asl}/\norm{\atl}\approx1.4$ --- no collapse.
-
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Training Dynamics \& Ablation}
-
-\begin{frame}{Training dynamics ($\beta=3$, forget-target=knn)}
-
-\begin{center}
-  \includegraphics[width=0.96\textwidth]{10_training_dynamics.pdf}
-\end{center}
-
-\footnotesize
-Top-left: loss terms; $\Ldiv$ drops as forget activations become orthogonal.
-Top-right: forget norm ratio stays $>1$ (no collapse).
-Bottom-left: retain/forget errors diverge.
-Bottom-right: offline LR{\raise.1ex\hbox{\scriptsize$\sim$}}acc plateaus $\approx0.842$--$0.844$ past epoch 12.
-
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\begin{frame}{$\beta$ ablation: anchor strength calibrates the detector}
-
-\begin{columns}[T]
-\begin{column}{0.50\textwidth}
-  \includegraphics[width=\textwidth]{11_beta_anchor_ablation.pdf}
-\end{column}
-\begin{column}{0.46\textwidth}
-\textbf{Mechanism}:
-
-Larger $\beta$
-$\Rightarrow$ tighter retain anchoring
-$\Rightarrow$ smaller train retain error
-$\Rightarrow$ LR threshold shifts right
-$\Rightarrow$ test forget rate $\nearrow 0.50$.
-
-\medskip
-$\beta=3$ hits forget rate $\approx0.519$, close to the true test forget rate
-$\approx0.50$ (independently confirmed by GMM and exp06 pseudo-labels).
-
-\medskip
-\textbf{Takeaway}: $\beta$ is a clean calibration dial from the data alone, without
-leaderboard probing.
-\end{column}
-\end{columns}
 
 \end{frame}
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Results}
 
-\begin{frame}{Results summary}
+\begin{frame}{Results}
 
-\begin{center}
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
 \footnotesize
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lcccc}
 \toprule
-Method & LR{\raise.1ex\hbox{\scriptsize$\sim$}}acc & LR fgt\% & RetainE & ForgetE \\
+Method & self-MIA & retE & fgtE & fgt\% \\
 \midrule
-Relabel (exp05) & \textbf{0.8475} & 0.538 & 0.114\,m & 0.861\,m \\
-Diverge (exp08, $\beta=3$) & 0.8442 & 0.519 & 0.139\,m & 0.769\,m \\
+Relabel        & \textbf{0.927} & 0.114 & 0.861 & 0.538 \\
+Divergence     & 0.881 & 0.139 & 0.769 & 0.519 \\
 \midrule
-Baseline (no unlearning) & --- & --- & 0.101\,m & 0.125\,m \\
+Baseline       & --- & 0.101 & 0.125 & --- \\
 \bottomrule
 \end{tabular}
-\end{center}
 
-\begin{center}
-  \includegraphics[width=0.62\textwidth]{12_error_distribution.pdf}
-\end{center}
-
-\footnotesize
-LR{\raise.1ex\hbox{\scriptsize$\sim$}}acc = agreement with exp06 pseudo-labels ($\approx96$\% CV accurate offline proxy).
+\medskip
+\scriptsize
+retE / fgtE = mean retain / forget error (m).\\
+fgt\% = LR test forget rate (true $\approx 0.50$).\\[4pt]
+\normalsize
+\end{column}
+\begin{column}{0.46\textwidth}
+  \includegraphics[width=\textwidth]{12_error_distribution.pdf}
+\end{column}
+\end{columns}
 
 \end{frame}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\begin{frame}{Why this is real unlearning --- not just relabelling}
+\begin{frame}{Why this is \emph{real} unlearning --- not just relabelling}
 
+\begin{columns}[T]
+\begin{column}{0.50\textwidth}
 \begin{itemize}
-  \item The diverge finetune changes \emph{where} in activation space the model
-    maps forget inputs, not just what label it predicts.
-
-  \item The cosine-similarity figure provides direct visual evidence: internal
-    computation on forget inputs has changed independently of output labels.
-
-  \item Ablation: without $\Lposf$ (\texttt{--forget-target none}),
-    LR{\raise.1ex\hbox{\scriptsize$\sim$}}acc drops to $\approx0.811$ --- the activation push
-    alone is insufficient because it is partly train-specific (transfer gap).
-
-  \item The $\Lposf$ (kNN) component supplies the \emph{transferable} error signal;
-    the $\Ldiv$ + $\Lanc$ components supply the \emph{representational detachment}.
-
-  \item Together they are sufficient for §2.8 winner verification: the mechanism is
-    genuine unlearning that modifies both the output behaviour and the internal
-    representations.
+  \item Divergence changes \emph{where} the model maps forget inputs in activation
+    space --- direct evidence the internal computation changed.
+  \item Forget activations are pushed off the teacher trajectory; retain stays anchored.
+  \item \textbf{Ablation}: drop the kNN-position loss and the activation push alone is
+    partly train-specific (worse transfer). The two terms are complementary:
+    \emph{detachment} $+$ \emph{transferable signal}.
 \end{itemize}
+\end{column}
+\begin{column}{0.48\textwidth}
+  \includegraphics[width=\textwidth]{08_effect_before_after.pdf}
+
+  \scriptsize
+  Block-5 activations: \textcolor{cForget}{forget} displaced after unlearning,
+  \textcolor{cRetain}{retain} anchored.
+\end{column}
+\end{columns}
 
 \end{frame}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Conclusion}
-
-\begin{frame}[fragile]{Conclusion \& reproducibility}
+\begin{frame}[fragile]{Conclusion}
 
 \begin{block}{Summary}
 \begin{enumerate}
-  \item \textbf{Diagnosis}: contamination = corrupted position labels.
-    Error = corruption magnitude.
-  \item \textbf{Probing}: CNN linearly separates forget/retain in activation space
-    (AUC 0.986 at block 5). Parameter-space detachment fails (entangled Fisher).
-  \item \textbf{Method}: hinge-cosine push on pre-ReLU BN + retain post-ReLU anchor
-    + kNN corrected position loss.
-  \item \textbf{Result}: offline LR{\raise.1ex\hbox{\scriptsize$\sim$}}acc 0.8442 (diverge) / 0.8475 (relabel).
+  \item \textbf{Signal}: contamination = corrupted positions; error = corruption magnitude.
+  \item \textbf{Family A} relabels with kNN-corrected positions (transferable signal).
+  \item \textbf{Family B} diverges forget activations off a frozen teacher (representational).
+  \item \textbf{Small ensemble} of both
 \end{enumerate}
 \end{block}
 
-\medskip
-\textbf{One-command repro}:
-{\footnotesize
-\begin{verbatim}
-python scripts/unlearning/diverge.py \
-    --forget-target knn --beta-anchor 3 --epochs 30
-python scripts/submission/make_submission.py \
-    --ckpt experiments/diverge/model_official_knn_b3.pth \
-    --out my_submission.csv
-\end{verbatim}
-}
+% \smallskip
+% \textbf{One-command repro of a compliant submission}:
+% {\scriptsize
+% \begin{verbatim}
+% python scripts/unlearning/diverge.py \
+%     --forget-target knn --beta-anchor 3 --epochs 30
+% python scripts/submission/make_submission.py \
+%     --ckpt experiments/diverge/model_official_knn_b3.pth \
+%     --out my_submission.csv
+% \end{verbatim}
+% }
+
+% \centering
+% \textbf{Thank you!}
 
 \end{frame}
 
 % ─────────────────────────────────────────────────────────────────────────────
 \appendix
 
-\begin{frame}{Appendix: data shapes}
-\begin{center}
-\footnotesize
-\begin{tabular}{llll}
-\toprule
-File & Shape & Dtype & Notes \\
-\midrule
-\texttt{task2\_train\_csi.npy}      & $(10918,4,2,4,64)$ & complex64 & raw \\
-\texttt{task2\_train\_positions.npy}& $(10918,3)$        & float64   & $z\approx0.94$ \\
-\texttt{task2\_train\_metadata.csv} & 10918 rows         & ---       & \texttt{is\_forget} \\
-\texttt{task2\_test\_csi.npy}       & $(2728,4,2,4,64)$  & complex64 & \\
-\texttt{task2\_test\_positions.npy} & $(2728,3)$         & float64   & official release \\
-\texttt{baseline\_cnn\_task2.pth}   & ---                & ---       & 15.8\,MB \\
-\bottomrule
-\end{tabular}
-\end{center}
-After \texttt{format\_csi\_for\_cnn}: $(N,4,2,4,64)\to(N,2,32,64)$ float32.
-\end{frame}
+\begin{frame}{Backup: divergence loss \& hyperparameters}
 
-\begin{frame}{Appendix: block-to-index mapping}
-\begin{center}
 \footnotesize
-\begin{tabular}{cccccl}
+\textbf{Total loss} (student $\fth$, frozen teacher $\fthn$, blocks 4--6):
+\[
+  \mathcal{L} = \Lpos + \beta\,\Lanc + \gamma_t\,\Ldiv + \nu\,\Lnorm + \delta\,\Lposf
+\]
+\begin{itemize}
+  \item $\Lanc$: retain post-ReLU activations pinned to teacher (relative squared dev.).
+  \item $\Ldiv$: hinge-cosine $\mathrm{ReLU}(\cos(\asl,\atl))$ on forget pre-ReLU BN.
+  \item $\Lnorm$: norm-keeper (prevents all-zero collapse). $\Lposf$: kNN forget position.
+\end{itemize}
+
+\medskip
+\begin{center}
+\begin{tabular}{lll}
 \toprule
-Block & Ch & Conv & BN & ReLU & Notes \\
-\midrule
-1 & 32  & 0 & 1 & 2  & +MaxPool  \\
-2 & 64  & 4 & 5 & 6  & +MaxPool  \\
-3 & 128 & 8 & 9 & 10 & +MaxPool  \\
-4 & 256 & 12 & \textbf{13} & \textbf{14} & +MaxPool; div+anc \\
-5 & 512 & 16 & \textbf{17} & \textbf{18} & no pool; div+anc \\
-6 & 512 & 19 & \textbf{20} & \textbf{21} & no pool; div+anc \\
-\midrule
-\multicolumn{4}{l}{22: AdaptiveAvgPool $(1\times1)$} & \multicolumn{2}{l}{23: Flatten; 24: Linear} \\
+$\beta$ (anchor) & 3.0 & lr $5\times10^{-5}$, Adam, batch 64 \\
+$\gamma$ (diverge) & 0.5 (ramp 2 ep) & 30 epochs, checkpoint ep 24 \\
+$\nu$ (norm) & 0.1 & BN running stats frozen \\
+$\delta$ (kNN pos) & 1.0 & select: max self-MIA, retain $\leq 0.25$\,m \\
 \bottomrule
 \end{tabular}
 \end{center}
-Bold = hook indices used by the diverge method.
+
+\medskip
+\textbf{$\beta$ calibrates the detector}: tighter anchor $\Rightarrow$ lower train retain
+error $\Rightarrow$ LR threshold shifts $\Rightarrow$ test forget rate $\to 0.50$
+(cross-checked by an unsupervised GMM split --- no leaderboard probing).
+
 \end{frame}
 
 \end{document}

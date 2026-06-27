@@ -9,9 +9,8 @@ This script reports:
   trainLR   official-LR train self-accuracy (the notebook's metric)
   retainE   mean train error on retain samples (want low: utility preserved)
   forgetE   mean train error on forget samples (want high: unlearning worked)
-  LRfgt%    official-LR test forget rate (want ~0.50)
-  LR~acc    agreement of official-LR test preds with exp06 pseudo-labels  (Kaggle proxy)
-  GMMfgt%   GMM test forget rate (reference only — not submittable)
+  LRfgt%    official-LR test forget rate (want ~0.50; the calibration target)
+  GMMfgt%   GMM test forget rate (self-contained cross-check of LRfgt%; not submittable)
 
 Usage:
   python scripts/submission/eval_official.py --ckpt experiments/diverge/model_official_knn_b3.pth
@@ -34,7 +33,6 @@ from src.metrics import (get_predictions, prediction_errors, mia_accuracy,
                           gmm_threshold_predictions)
 
 DATA = ROOT / "data" / "public"
-PSEUDO_PATH = ROOT / "experiments" / "pseudo_labels" / "test_proba.npy"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--ckpt", action="append", required=True,
@@ -58,13 +56,12 @@ meta_te = pd.read_csv(DATA / "task2_test_metadata.csv")
 
 X_tr = format_csi_for_cnn(csi_tr)
 X_te = format_csi_for_cnn(csi_te)
-pseudo = (np.load(PSEUDO_PATH) > 0.5).astype(int) if PSEUDO_PATH.exists() else None
 
 if args.out_dir:
     Path(args.out_dir).mkdir(parents=True, exist_ok=True)
 
 header = (f"{'checkpoint':<48} {'trainLR':>8} {'retainE':>8} {'forgetE':>8} "
-          f"{'LRfgt%':>7} {'LR~acc':>7} {'GMMfgt%':>8} {'GMM~acc':>8}")
+          f"{'LRfgt%':>7} {'GMMfgt%':>8}")
 print("\n" + header)
 print("-" * len(header))
 
@@ -77,22 +74,19 @@ for ckpt in args.ckpt:
     mia = mia_accuracy(err_tr, y_tr, err_tr, y_tr)       # train self-accuracy
     lr_test = mia["lr_model"].predict(err_te.reshape(-1, 1)).astype(int)
     lr_fgt = float(lr_test.mean())
-    lr_acc = float((lr_test == pseudo).mean()) if pseudo is not None else float("nan")
 
-    # --- GMM, reference only (NOT submittable) ---
+    # --- GMM split of test errors: self-contained cross-check of the LR forget rate ---
     gmm = gmm_threshold_predictions(err_te)
     gmm_fgt = gmm["forget_rate"]
-    gmm_acc = float((gmm["predictions"] == pseudo).mean()) if pseudo is not None else float("nan")
 
     name = Path(ckpt).parent.name + "/" + Path(ckpt).name
     print(f"{name:<48} {mia['mia_accuracy']:>8.4f} {err_tr[y_tr==0].mean():>8.4f} "
-          f"{err_tr[y_tr==1].mean():>8.4f} {lr_fgt:>7.3f} {lr_acc:>7.4f} "
-          f"{gmm_fgt:>8.3f} {gmm_acc:>8.4f}")
+          f"{err_tr[y_tr==1].mean():>8.4f} {lr_fgt:>7.3f} {gmm_fgt:>8.3f}")
 
     if args.out_dir:
         out = Path(args.out_dir) / f"submission_{Path(ckpt).parent.name}.csv"
         pd.DataFrame({"id": meta_te["sample_index"], "is_forget": lr_test}).to_csv(out, index=False)
         print(f"    -> wrote {out}")
 
-print("\nLR~acc = official-LR test preds vs pseudo-labels (the relevant offline proxy).")
-print("LRfgt% near 0.50 is healthy; >>0.50 = train-fitted threshold over-predicts on test.")
+print("\nLRfgt% near 0.50 is healthy; >>0.50 = train-fitted threshold over-predicts on test.")
+print("GMMfgt% (unsupervised split of test errors) should agree with LRfgt% on a calibrated model.")

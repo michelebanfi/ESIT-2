@@ -411,7 +411,7 @@ nr     = [e["forget_norm_ratio"] for e in log]
 eval_epochs = [e["epoch"] for e in log if "self_mia" in e]
 ret_errs = [e["retain_err_m"] for e in log if "retain_err_m" in e]
 fgt_errs = [e["forget_err_m"] for e in log if "forget_err_m" in e]
-lr_accs  = [e.get("lr_pseudo_agreement", float("nan")) for e in log if "self_mia" in e]
+lr_fgt   = [e.get("lr_test_forget_rate", float("nan")) for e in log if "self_mia" in e]
 
 fig = plt.figure(figsize=(12, 8))
 gs = GridSpec(2, 2, figure=fig, hspace=0.4, wspace=0.35)
@@ -442,10 +442,11 @@ ax3.set_xlabel("Epoch"); ax3.set_ylabel("Mean error (m)")
 ax3.set_title("Train errors vs. original labels"); ax3.legend(fontsize=9); ax3.grid(alpha=0.3)
 
 ax4 = fig.add_subplot(gs[1, 1])
-ax4.plot(eval_epochs, lr_accs, "o-", color="navy", lw=2, ms=5)
+ax4.plot(eval_epochs, lr_fgt, "o-", color="navy", lw=2, ms=5)
+ax4.axhline(0.50, color="red", ls=":", lw=1.0, alpha=0.7, label="true rate ≈ 0.50")
 ax4.axvline(best_epoch, color="k", ls="--", lw=1.0, alpha=0.7, label=f"ep {best_epoch}")
-ax4.set_xlabel("Epoch"); ax4.set_ylabel("LR~acc (offline Kaggle proxy)")
-ax4.set_title("Official-LR test accuracy (proxy)"); ax4.legend(fontsize=9); ax4.grid(alpha=0.3)
+ax4.set_xlabel("Epoch"); ax4.set_ylabel("LR test forget rate")
+ax4.set_title("Detector calibration (→ 0.50)"); ax4.legend(fontsize=9); ax4.grid(alpha=0.3)
 
 fig.suptitle(r"Training dynamics — diverge, $\beta=3$, forget-target=knn", fontsize=13)
 save("10_training_dynamics.pdf", fig)

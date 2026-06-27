@@ -60,7 +60,6 @@ CFG = {
 
 DATA = ROOT / "data" / "public"
 OUT_DIR = ROOT / "experiments" / "probe"
-PSEUDO_PATH = ROOT / "experiments" / "pseudo_labels" / "test_proba.npy"
 EPS = 1e-8
 
 parser = argparse.ArgumentParser()
@@ -90,13 +89,12 @@ pos_test = np.load(ROOT / "data" / "task2_test_positions.npy")[:, :2]
 
 X_full = format_csi_for_cnn(csi_train)
 X_test = format_csi_for_cnn(csi_test)
-PSEUDO = (np.load(PSEUDO_PATH) > 0.5).astype(int) if PSEUDO_PATH.exists() else None
 
 
 # ---------------------------------------------------------------- shared helpers
 
 def quick_eval(model):
-    """Self-MIA + retain/forget errors on train; official-LR proxy on test."""
+    """Self-MIA + retain/forget errors on train; official-LR forget rate on test."""
     err_tr = prediction_errors(get_predictions(model, X_full, device=DEVICE), pos_train)
     mia = mia_accuracy(err_tr, y, err_tr, y)
     row = {
@@ -109,8 +107,6 @@ def quick_eval(model):
     row["lr_test_forget_rate"] = float(lr_te.mean())
     gmm = gmm_threshold_predictions(err_te)
     row["gmm_test_forget_rate"] = gmm["forget_rate"]
-    if PSEUDO is not None:
-        row["lr_pseudo_agreement"] = float((lr_te == PSEUDO).mean())
     return row
 
 

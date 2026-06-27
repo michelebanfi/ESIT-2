@@ -6,3 +6,15 @@ __pycache__/
 *.egg-info/
 **/*.pth
 .DS_Store
+.claude/
+
+# LaTeX build artifacts (keep presentation/main.tex and presentation/main.pdf)
+presentation/*.aux
+presentation/*.fdb_latexmk
+presentation/*.fls
+presentation/*.log
+presentation/*.nav
+presentation/*.out
+presentation/*.snm
+presentation/*.toc
+presentation/*.vrb

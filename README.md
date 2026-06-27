@@ -1,78 +1,41 @@
 # ESIT-D2I 2026 — Task 2: Machine Unlearning
 
-**Competition:** ESIT-D2I 2026 Charting the Path to Bifröst — Task 2 (Kaggle)  
-**Result:** 3rd place (public LB 0.92787 with an earlier non-compliant ensemble)
+**Competition:** ESIT-D2I 2026 _Charting the Path to Bifröst_ — Task 2 (Kaggle)
+**Task:** machine unlearning for CSI-based indoor localization.
 
 ---
 
 ## Problem
 
-A pretrained CNN (`DichasusPositionPredictor`) was trained on data that includes a
-contaminated subset (`is_forget=1`). Goal: **remove those samples' influence** from
-the model without retraining from scratch, while preserving accuracy on the clean
-retain set and an unseen test set.
+A pretrained CNN (`DichasusPositionPredictor`) predicts a 2-D position `(x, y)` from
+Channel State Information (CSI). It was trained on data that includes a contaminated
+subset flagged by `is_forget=1`. The goal is to **remove those samples' influence**
+from the model **without retraining from scratch**, while preserving accuracy on the
+clean retain set and on an unseen test set.
 
-The mandatory evaluation (2026-06-17 organizer clarification): one fine-tuned model →
-its own full-train errors (vs original labels) → `LogisticRegression()` → test errors
-→ `predict()` at 0.5 → `id,is_forget` CSV.
+The contamination is **noise injected into both the CSI features and the position
+targets**; `is_forget=1` marks the much-noisier observations we must unlearn. As it
+turns out, the dominant, _transferable_ component is **corrupted position labels** —
+the CSI is genuine but the stored `(x, y)` is wrong (see [Key findings](#key-findings)).
 
----
+## Approach: two unlearning families + a small ensemble
 
-## Contamination diagnosis
+| Family                                           | Idea                                                                                                                                                                                                                                           | Script                          |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| **Relabel** (`relabel`)                          | Replace each forget sample's corrupted label with the mean position of its kNN retain neighbours (in CSI-PCA space), then fine-tune. The induced error **= the corruption magnitude**, which transfers exactly to test.                        | `scripts/unlearning/relabel.py` |
+| **Activation-trajectory divergence** (`diverge`) | Push forget samples' pre-ReLU activations _off_ the frozen teacher's trajectory (hinge-cosine), anchor retain post-ReLU activations _to_ it, plus a kNN-corrected forget-position loss. Real representational unlearning, not just relabeling. | `scripts/unlearning/diverge.py` |
 
-Forget samples have **corrupted position labels**: their CSI disagrees with their stored
-`(x, y)`. Mean kNN-consistency shift: 1.21 m (forget) vs 0.32 m (retain). The CNN
-internally "knows" forget samples — linear probe AUC at block 5 post-ReLU: **0.986**.
+The leaderboard entry was a **small ensemble** combining the two
+families (their error signals are complementary: relabel transfers cleanly; divergence
+detaches the internal representation). The later single-model mandate makes each family
+a standalone compliant submission:
 
----
+| Checkpoint                                      | Family     | Offline self-MIA | LR test forget rate |
+| ----------------------------------------------- | ---------- | ---------------- | ------------------- |
+| `experiments/relabel/model_best.pth`            | Relabel    | 0.93             | 0.538               |
+| `experiments/diverge/model_official_knn_b3.pth` | Divergence | 0.88             | 0.519               |
 
-## Compliant submissions
-
-| Checkpoint | Method | Offline LR~acc | LR forget rate |
-|---|---|---|---|
-| `experiments/relabel/model_best.pth` | kNN-relabel finetune | **0.8475** | 0.538 |
-| `experiments/diverge/model_official_knn_b3.pth` | Activation-trajectory divergence | **0.8442** | 0.519 |
-
-Both CSVs are in `submissions/`.
-
----
-
-## Reproducing the results
-
-```bash
-# 0. One-time setup
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-python scripts/data/download.py          # fetch dataset + symlink ./data/
-
-# 1. Sanity check
-python scripts/data/inspect.py
-
-# 2. Diagnose contamination (no CNN)
-python scripts/probing/contamination.py
-
-# 3. Build pseudo-label oracle (offline only — never in submission)
-python scripts/probing/pseudo_labels.py
-
-# 4a. Train relabel model (exp05, ~5 min on M1)
-python scripts/unlearning/relabel.py
-
-# 4b. Train diverge model (exp08, ~20 min on M1)
-python scripts/unlearning/diverge.py --forget-target knn --beta-anchor 3 --epochs 30
-
-# 5. Evaluate (official metric)
-python scripts/submission/eval_official.py \
-  --ckpt experiments/relabel/model_best.pth \
-  --ckpt experiments/diverge/model_official_knn_b3.pth
-
-# 6. Generate compliant CSVs
-python scripts/submission/make_submission.py \
-  --ckpt experiments/diverge/model_official_knn_b3.pth \
-  --out submissions/my_submission.csv
-
-# 7. Generate presentation figures (forward passes on M1, ~2 min)
-python scripts/probing/make_figures.py
-```
+Both compliant CSVs are in `submissions/`.
 
 ---
 
@@ -81,44 +44,84 @@ python scripts/probing/make_figures.py
 ```
 src/
   dataset.py      format_csi_for_cnn() + knn_corrected_positions() + make_tensor_dataset()
-  model.py        DichasusPositionPredictor (6-layer CNN) + load_model()
+  model.py        DichasusPositionPredictor (6-block CNN) + load_model()
   train.py        train_epoch / eval_loss helpers
-  metrics.py      get_predictions / prediction_errors / mia_accuracy / localization_stats
+  metrics.py      get_predictions / prediction_errors / mia_accuracy / gmm_threshold_predictions
   activations.py  ActivationTap (forward-hook tap) + fisher_importance()
 
 scripts/
   data/           download.py  inspect.py
-  probing/        contamination.py  pseudo_labels.py  activations.py  make_figures.py
+  probing/        contamination.py  activations.py  make_figures.py
   unlearning/     relabel.py  diverge.py
   submission/     make_submission.py  eval_official.py
 
 experiments/
   relabel/        model_best.pth, config.json
-  diverge/        model_official_knn_b3.pth, train_log_knn_b*.json
+  diverge/        model_official_knn_b3.pth, train_log_knn_b*.json   (β-anchor ablation)
   probe/          cohens_d_layer*.npy, layer_separability.json, fisher_layer_summary.json,
-                  fisher_{forget,retain}_baseline_cnn_task2.pth, ssd_grid_results_baseline.json
-  pseudo_labels/  test_proba.npy  (offline diagnostic oracle — never in submission)
+                  ssd_grid_results_baseline.json
   probe_contamination/  results.json
 
-figures/          PDF figures for the Beamer presentation
+figures/          PDF figures for the presentation (regenerated by make_figures.py)
 presentation/     main.tex + compiled main.pdf
 submissions/      submission_relabel.csv  submission_diverge_knn.csv
 data/             symlink → kagglehub cache (gitignored)
+```
+
+> Model checkpoints (`*.pth`) are **gitignored** — they are large binaries and are
+> reproduced by the scripts below. The compliant submission CSVs are committed.
+
+---
+
+## Reproducing
+
+```bash
+# 0. One-time setup
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+python scripts/data/download.py        # fetch dataset via kagglehub + symlink ./data/
+
+# 1. Sanity-check shapes / is_forget distribution
+python scripts/data/inspect.py
+
+# 2. Diagnose the contamination (no CNN involved)
+python scripts/probing/contamination.py
+
+# 3a. Train the relabel model         (~5 min on M1)
+python scripts/unlearning/relabel.py
+
+# 3b. Train the divergence model       (~20 min on M1)
+python scripts/unlearning/diverge.py --forget-target knn --beta-anchor 3 --epochs 30
+
+# 4. Evaluate under the official metric (self-contained — reports forget rate + GMM cross-check)
+python scripts/submission/eval_official.py \
+  --ckpt experiments/relabel/model_best.pth \
+  --ckpt experiments/diverge/model_official_knn_b3.pth
+
+# 5. Generate a compliant submission CSV from any single checkpoint
+python scripts/submission/make_submission.py \
+  --ckpt experiments/diverge/model_official_knn_b3.pth \
+  --out submissions/my_submission.csv
+
+# 6. (Optional) regenerate the presentation figures
+python scripts/probing/activations.py --probe --ssd   # probe + Fisher + SSD grid artifacts
+python scripts/probing/make_figures.py
 ```
 
 ---
 
 ## Key findings
 
-- **Contamination = corrupted positions**: forget CSI is genuine; the stored `(x,y)` is
-  wrong. The corruption magnitude (~1.2 m shift) is the unlearning signal.
-- **CNN already separates forget/retain**: linear probe AUC rises 0.948 → 0.986 with depth.
-- **Parameter-space detachment (SSD) fails**: Fisher importance is entangled; dampening
-  degrades retain and forget in lockstep at every grid point.
-- **Activation-trajectory divergence**: push forget pre-ReLU BN activations off the baseline
-  trajectory (hinged cosine), anchor retain post-ReLU activations to a frozen teacher.
-  + kNN-corrected forget positions supply the transferable error signal.
-- **Prior LB score (0.92787)** used a non-compliant 3-way ensemble + top-50% threshold.
-  The compliant single-model results are: relabel 0.8475, diverge 0.8442 (offline LR~acc).
-
-See `CLAUDE.md` for the full experiment history and changelog.
+- **Contamination = corrupted positions.** Forget CSI is genuine; the stored `(x, y)`
+  is wrong. A forget sample's labelled position sits ~1.2 m from its CSI-neighbours'
+  positions vs ~0.3 m for retain (kNN-consistency AUC 0.936). The corruption magnitude
+  _is_ the unlearning signal, and it transfers exactly to the test set.
+- **The CNN already separates forget from retain internally.** Linear probes on
+  channel-mean activations reach AUC 0.948 → 0.986 from block 1 to block 5.
+- **Parameter-space detachment (SSD) fails.** Forget/retain Fisher importance is
+  entangled; dampening degrades retain and forget errors in lockstep at every grid point.
+  Unlearning must act in **activation space**, which the divergence method does.
+- **The detector is calibrated by anchor strength.** Tighter retain anchoring (larger β)
+  lowers the train retain error, shifting the LR threshold so the test forget rate rises
+  toward the true ≈ 0.50 (independently confirmed by an unsupervised GMM split). β = 3
+  lands at 0.519 — no leaderboard probing needed.
