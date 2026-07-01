@@ -57,35 +57,35 @@
 \maketitle
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Task \& metric}
+% \section{Task \& metric}
 
-\begin{frame}{The task and the fixed metric}
+% \begin{frame}{The task and the fixed metric}
 
-\begin{block}{Problem}
-A pretrained CNN $\fth$ was trained on data with a contaminated subset $\Fset$
-(\texttt{is\_forget}$=1$). \textbf{Remove $\Fset$'s influence without retraining from
-scratch}, preserving accuracy on the retain set $\Rset$ and the unseen test set.
-\end{block}
+% \begin{block}{Problem}
+% A pretrained CNN $\fth$ was trained on data with a contaminated subset $\Fset$
+% (\texttt{is\_forget}$=1$). \textbf{Remove $\Fset$'s influence without retraining from
+% scratch}, preserving accuracy on the retain set $\Rset$ and the unseen test set.
+% \end{block}
 
-\medskip
-\begin{block}{Mandatory evaluation --- the only freedom is the fine-tune}
-\[
-  \underbrace{\text{one fine-tuned model}}_{\text{start from baseline}}
-  \;\to\;
-  \underbrace{e_i = \norm{\fth(x_i)-\yi}_2}_{\text{vs.\ \emph{original} labels}}
-  \;\xrightarrow{\;\text{LogReg}\;}\;
-  \hat{z}\in\{0,1\}
-\]
-\textbf{Single model only} --- no ensembles / thresholds / cross-fitting in the final path.
-\end{block}
+% \medskip
+% \begin{block}{Mandatory evaluation --- the only freedom is the fine-tune}
+% \[
+%   \underbrace{\text{one fine-tuned model}}_{\text{start from baseline}}
+%   \;\to\;
+%   \underbrace{e_i = \norm{\fth(x_i)-\yi}_2}_{\text{vs.\ \emph{original} labels}}
+%   \;\xrightarrow{\;\text{LogReg}\;}\;
+%   \hat{z}\in\{0,1\}
+% \]
+% \textbf{Single model only} --- no ensembles / thresholds / cross-fitting in the final path.
+% \end{block}
 
-\medskip
-\centering
-\textbf{Good unlearning} $\iff$
-$\mathbb{E}_{\Fset}[e_i] \gg \mathbb{E}_{\Rset}[e_i]$
-$\iff$ the detector separates them.
+% \medskip
+% \centering
+% \textbf{Good unlearning} $\iff$
+% $\mathbb{E}_{\Fset}[e_i] \gg \mathbb{E}_{\Rset}[e_i]$
+% $\iff$ the detector separates them.
 
-\end{frame}
+% \end{frame}
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{The unlearning signal}
@@ -210,7 +210,7 @@ error distribution.
   arr/.style={-Latex, thick}]
   \node[mod, fill=cRetain!15] (a) {Relabel model};
   \node[mod, fill=cForget!15, below=0.35 of a] (b) {Divergence model};
-  \node[op, right=1.1 of $(a)!0.5!(b)$] (avg) {average\\errors $\bar e_i$};
+  \node[op, right=1.5 of $(a)!0.5!(b)$] (avg) {average\\errors $\bar e_i$};
   \node[op, right=0.9 of avg, fill=cTeacher!25] (det) {fixed LR\\detector};
   \node[right=0.8 of det] (out) {\texttt{is\_forget}};
   \draw[arr] (a.east) -- (avg.west);
@@ -220,12 +220,12 @@ error distribution.
 \end{tikzpicture}
 \end{center}
 
-\medskip
-\begin{itemize}
-  \item Members span both families ($+$ a gradient-ascent variant for diversity).
-  \item Organizers later mandated \emph{single-model} $\Rightarrow$ each family becomes a
-    standalone compliant submission.
-\end{itemize}
+% \medskip
+% \begin{itemize}
+%   \item Members span both families ($+$ a gradient-ascent variant for diversity).
+%   \item Organizers later mandated \emph{single-model} $\Rightarrow$ each family becomes a
+%     standalone compliant submission.
+% \end{itemize}
 
 \end{frame}
 
@@ -317,38 +317,38 @@ fgt\% = LR test forget rate (true $\approx 0.50$).\\[4pt]
 \end{frame}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\appendix
+% \appendix
 
-\begin{frame}{Backup: divergence loss \& hyperparameters}
+% \begin{frame}{Backup: divergence loss \& hyperparameters}
 
-\footnotesize
-\textbf{Total loss} (student $\fth$, frozen teacher $\fthn$, blocks 4--6):
-\[
-  \mathcal{L} = \Lpos + \beta\,\Lanc + \gamma_t\,\Ldiv + \nu\,\Lnorm + \delta\,\Lposf
-\]
-\begin{itemize}
-  \item $\Lanc$: retain post-ReLU activations pinned to teacher (relative squared dev.).
-  \item $\Ldiv$: hinge-cosine $\mathrm{ReLU}(\cos(\asl,\atl))$ on forget pre-ReLU BN.
-  \item $\Lnorm$: norm-keeper (prevents all-zero collapse). $\Lposf$: kNN forget position.
-\end{itemize}
+% \footnotesize
+% \textbf{Total loss} (student $\fth$, frozen teacher $\fthn$, blocks 4--6):
+% \[
+%   \mathcal{L} = \Lpos + \beta\,\Lanc + \gamma_t\,\Ldiv + \nu\,\Lnorm + \delta\,\Lposf
+% \]
+% \begin{itemize}
+%   \item $\Lanc$: retain post-ReLU activations pinned to teacher (relative squared dev.).
+%   \item $\Ldiv$: hinge-cosine $\mathrm{ReLU}(\cos(\asl,\atl))$ on forget pre-ReLU BN.
+%   \item $\Lnorm$: norm-keeper (prevents all-zero collapse). $\Lposf$: kNN forget position.
+% \end{itemize}
 
-\medskip
-\begin{center}
-\begin{tabular}{lll}
-\toprule
-$\beta$ (anchor) & 3.0 & lr $5\times10^{-5}$, Adam, batch 64 \\
-$\gamma$ (diverge) & 0.5 (ramp 2 ep) & 30 epochs, checkpoint ep 24 \\
-$\nu$ (norm) & 0.1 & BN running stats frozen \\
-$\delta$ (kNN pos) & 1.0 & select: max self-MIA, retain $\leq 0.25$\,m \\
-\bottomrule
-\end{tabular}
-\end{center}
+% \medskip
+% \begin{center}
+% \begin{tabular}{lll}
+% \toprule
+% $\beta$ (anchor) & 3.0 & lr $5\times10^{-5}$, Adam, batch 64 \\
+% $\gamma$ (diverge) & 0.5 (ramp 2 ep) & 30 epochs, checkpoint ep 24 \\
+% $\nu$ (norm) & 0.1 & BN running stats frozen \\
+% $\delta$ (kNN pos) & 1.0 & select: max self-MIA, retain $\leq 0.25$\,m \\
+% \bottomrule
+% \end{tabular}
+% \end{center}
 
-\medskip
-\textbf{$\beta$ calibrates the detector}: tighter anchor $\Rightarrow$ lower train retain
-error $\Rightarrow$ LR threshold shifts $\Rightarrow$ test forget rate $\to 0.50$
-(cross-checked by an unsupervised GMM split --- no leaderboard probing).
+% \medskip
+% \textbf{$\beta$ calibrates the detector}: tighter anchor $\Rightarrow$ lower train retain
+% error $\Rightarrow$ LR threshold shifts $\Rightarrow$ test forget rate $\to 0.50$
+% (cross-checked by an unsupervised GMM split --- no leaderboard probing).
 
-\end{frame}
+% \end{frame}
 
 \end{document}
