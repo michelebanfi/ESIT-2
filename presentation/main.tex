@@ -88,46 +88,46 @@
 % \end{frame}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{The unlearning signal}
+% \section{The unlearning signal}
 
-\begin{frame}{What is the contamination?}
+% \begin{frame}{What is the contamination?}
 
-\begin{columns}[T]
-\begin{column}{0.54\textwidth}
-\textbf{The forget labels are corrupted positions} --- the CSI is genuine, the stored
-$(x,y)$ is wrong.
+% \begin{columns}[T]
+% \begin{column}{0.54\textwidth}
+% \textbf{The forget labels are corrupted positions} --- the CSI is genuine, the stored
+% $(x,y)$ is wrong.
 
-\medskip
-\textbf{kNN-consistency} (label vs.\ its 10 nearest \emph{retain} neighbours, CSI-PCA space):
+% \medskip
+% \textbf{kNN-consistency} (label vs.\ its 10 nearest \emph{retain} neighbours, CSI-PCA space):
 
-\smallskip
-\begin{tabular}{lcc}
-\toprule
- & Retain & Forget \\
-\midrule
-mean shift & $0.32\,\mathrm{m}$ & $1.21\,\mathrm{m}$ \\
-AUC$(z\,|\,\text{shift})$ & \multicolumn{2}{c}{$0.936$} \\
-\bottomrule
-\end{tabular}
+% \smallskip
+% \begin{tabular}{lcc}
+% \toprule
+%  & Retain & Forget \\
+% \midrule
+% mean shift & $0.32\,\mathrm{m}$ & $1.21\,\mathrm{m}$ \\
+% AUC$(z\,|\,\text{shift})$ & \multicolumn{2}{c}{$0.936$} \\
+% \bottomrule
+% \end{tabular}
 
-\medskip
-If the model predicts the \emph{true} position,
-$\;e_i \approx \norm{\mathbf{y}^{\mathrm{true}}_i - \yi}_2$ ---
-\textcolor{cAccent}{\textbf{error = corruption magnitude}}, which \textbf{transfers to test}.
-\end{column}
-\begin{column}{0.44\textwidth}
-  \includegraphics[width=\textwidth]{01_contamination_shift.pdf}
-\end{column}
-\end{columns}
+% \medskip
+% If the model predicts the \emph{true} position,
+% $\;e_i \approx \norm{\mathbf{y}^{\mathrm{true}}_i - \yi}_2$ ---
+% \textcolor{cAccent}{\textbf{error = corruption magnitude}}, which \textbf{transfers to test}.
+% \end{column}
+% \begin{column}{0.44\textwidth}
+%   \includegraphics[width=\textwidth]{01_contamination_shift.pdf}
+% \end{column}
+% \end{columns}
 
-\end{frame}
+% \end{frame}
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Two unlearning families}
 
 \begin{frame}{Family A --- Relabel: denoise the labels}
 
-\textbf{Idea}: give the model a \emph{trusted} target for each forget sample, then
+Give the model a \emph{trusted} target for each forget sample, then
 fine-tune. The error against the \emph{original} label then equals the corruption.
 
 \medskip
@@ -140,16 +140,16 @@ fine-tune. The error against the \emph{original} label then equals the corruptio
   \item Fine-tune on the corrected targets.
 \end{enumerate}
 
-\medskip
-\begin{block}{Why it works for the metric}
-The model learns the true position $\Rightarrow$ for a forget sample the error vs.\ the
-\emph{original} (corrupted) label is large and \textbf{transfers exactly} to the test set.
-\end{block}
+% \medskip
+% \begin{block}{Why it works for the metric}
+% The model learns the true position $\Rightarrow$ for a forget sample the error vs.\ the
+% \emph{original} (corrupted) label is large and \textbf{transfers exactly} to the test set.
+% \end{block}
 
-\smallskip
-\footnotesize
-Result: self-MIA $0.927$, \quad retain error $0.114\,\mathrm{m}$,
-\quad forget error $0.861\,\mathrm{m}$.
+% \smallskip
+% \footnotesize
+% Result: self-MIA $0.927$, \quad retain error $0.114\,\mathrm{m}$,
+% \quad forget error $0.861\,\mathrm{m}$.
 
 \end{frame}
 
@@ -195,9 +195,41 @@ Result: self-MIA $0.927$, \quad retain error $0.114\,\mathrm{m}$,
 \end{frame}
 
 % ─────────────────────────────────────────────────────────────────────────────
+\begin{frame}{Seeing the divergence in activation space}
+
+\centering
+\includegraphics[width=0.96\textwidth]{08_effect_before_after.pdf}
+
+\vspace{0.5mm}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\footnotesize
+\textbf{Left --- \emph{where} they sit.}
+One axis (LDA) is fit on the \emph{teacher} to best tell forget from retain at block~5;
+every sample is projected onto it. Filled $=$ before, outline $=$ after.
+The \textcolor{cForget}{forget} cloud slides $\sim$3 units off its baseline location;
+\textcolor{cRetain}{retain} does not move.
+\end{column}
+\begin{column}{0.5\textwidth}
+\footnotesize
+\textbf{Right --- \emph{how far} each moved.}
+Per-sample $\norm{\mathbf{a}_{\text{after}}-\mathbf{a}_{\text{before}}}_2$.
+\textcolor{cRetain}{Retain} barely shifts (mean 0.8); \textcolor{cForget}{forget}
+travels $3\times$ further (mean 2.4), the two hardly overlap.
+\end{column}
+\end{columns}
+
+\vspace{1mm}
+\centering
+\small
+Relabelling only remaps the output; here the \textbf{internal representation itself moves and only for forget}.
+
+\end{frame}
+
+% ─────────────────────────────────────────────────────────────────────────────
 \begin{frame}{The small ensemble}
 
-\textbf{Why ensemble?} The two families make \emph{complementary} errors:
+The two families make \emph{complementary} errors:
 relabel gives a clean transferable signal; divergence detaches the representation.
 Averaging their per-sample errors before the detector yields a \textbf{more separable}
 error distribution.
@@ -230,74 +262,51 @@ error distribution.
 \end{frame}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Results}
+% \section{Results}
 
-\begin{frame}{Results}
+% \begin{frame}{Results}
 
-\begin{columns}[T]
-\begin{column}{0.52\textwidth}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{lcccc}
-\toprule
-Method & self-MIA & retE & fgtE & fgt\% \\
-\midrule
-Relabel        & \textbf{0.927} & 0.114 & 0.861 & 0.538 \\
-Divergence     & 0.881 & 0.139 & 0.769 & 0.519 \\
-\midrule
-Baseline       & --- & 0.101 & 0.125 & --- \\
-\bottomrule
-\end{tabular}
+% \begin{columns}[T]
+% \begin{column}{0.52\textwidth}
+% \footnotesize
+% \setlength{\tabcolsep}{3pt}
+% \begin{tabular}{lcccc}
+% \toprule
+% Method & self-MIA & retE & fgtE & fgt\% \\
+% \midrule
+% Relabel        & \textbf{0.927} & 0.114 & 0.861 & 0.538 \\
+% Divergence     & 0.881 & 0.139 & 0.769 & 0.519 \\
+% \midrule
+% Baseline       & --- & 0.101 & 0.125 & --- \\
+% \bottomrule
+% \end{tabular}
 
-\medskip
-\scriptsize
-retE / fgtE = mean retain / forget error (m).\\
-fgt\% = LR test forget rate (true $\approx 0.50$).\\[4pt]
-\normalsize
-\end{column}
-\begin{column}{0.46\textwidth}
-  \includegraphics[width=\textwidth]{12_error_distribution.pdf}
-\end{column}
-\end{columns}
+% \medskip
+% \scriptsize
+% retE / fgtE = mean retain / forget error (m).\\
+% fgt\% = LR test forget rate (true $\approx 0.50$).\\[4pt]
+% \normalsize
+% \end{column}
+% \begin{column}{0.46\textwidth}
+%   \includegraphics[width=\textwidth]{12_error_distribution.pdf}
+% \end{column}
+% \end{columns}
 
-\end{frame}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\begin{frame}{Why this is \emph{real} unlearning --- not just relabelling}
-
-\begin{columns}[T]
-\begin{column}{0.50\textwidth}
-\begin{itemize}
-  \item Divergence changes \emph{where} the model maps forget inputs in activation
-    space --- direct evidence the internal computation changed.
-  \item Forget activations are pushed off the teacher trajectory; retain stays anchored.
-  \item \textbf{Ablation}: drop the kNN-position loss and the activation push alone is
-    partly train-specific (worse transfer). The two terms are complementary:
-    \emph{detachment} $+$ \emph{transferable signal}.
-\end{itemize}
-\end{column}
-\begin{column}{0.48\textwidth}
-  \includegraphics[width=\textwidth]{08_effect_before_after.pdf}
-
-  \scriptsize
-  Block-5 activations: \textcolor{cForget}{forget} displaced after unlearning,
-  \textcolor{cRetain}{retain} anchored.
-\end{column}
-\end{columns}
-
-\end{frame}
+% \end{frame}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\begin{frame}[fragile]{Conclusion}
 
-\begin{block}{Summary}
-\begin{enumerate}
-  \item \textbf{Signal}: contamination = corrupted positions; error = corruption magnitude.
-  \item \textbf{Family A} relabels with kNN-corrected positions (transferable signal).
-  \item \textbf{Family B} diverges forget activations off a frozen teacher (representational).
-  \item \textbf{Small ensemble} of both
-\end{enumerate}
-\end{block}
+% ─────────────────────────────────────────────────────────────────────────────
+% \begin{frame}[fragile]{Conclusion}
+
+% \begin{block}{Summary}
+% \begin{enumerate}
+%   \item \textbf{Signal}: contamination = corrupted positions; error = corruption magnitude.
+%   \item \textbf{Family A} relabels with kNN-corrected positions (transferable signal).
+%   \item \textbf{Family B} diverges forget activations off a frozen teacher (representational).
+%   \item \textbf{Small ensemble} of both
+% \end{enumerate}
+% \end{block}
 
 % \smallskip
 % \textbf{One-command repro of a compliant submission}:
@@ -314,7 +323,7 @@ fgt\% = LR test forget rate (true $\approx 0.50$).\\[4pt]
 % \centering
 % \textbf{Thank you!}
 
-\end{frame}
+% \end{frame}
 
 % ─────────────────────────────────────────────────────────────────────────────
 % \appendix
